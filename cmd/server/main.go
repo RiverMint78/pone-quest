@@ -24,14 +24,22 @@ func main() {
 
 	// init slog
 	level := slog.LevelInfo
+	addSource := false
 	if *debug {
 		level = slog.LevelDebug
+		addSource = true
 	}
 	opts := &slog.HandlerOptions{
-		Level: level,
+		Level:     level,
+		AddSource: addSource,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.TimeKey {
 				return slog.String(a.Key, a.Value.Time().Format("2006-01-02 15:04:05"))
+			}
+			if a.Value.Kind() == slog.KindDuration {
+				d := a.Value.Duration()
+				ms := float64(d.Nanoseconds()) / 1e6
+				return slog.String(a.Key, fmt.Sprintf("%.4fms", ms))
 			}
 			return a
 		},

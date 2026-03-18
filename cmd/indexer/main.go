@@ -41,7 +41,7 @@ func main() {
 	)
 
 	// open db
-	db, err := store.New("pone.db")
+	db, err := store.New(os.Getenv("PQ_DATABASE"))
 	if err != nil {
 		slog.Error("数据库连接失败", "err", err)
 		os.Exit(1)

@@ -1,0 +1,19 @@
+{{define "results.tmpl"}}
+    {{range .}}
+    <a href="{{.ImagePath}}" target="_blank" class="result-card group p-5 block">
+        <div class="aspect-square flex items-center justify-center mb-4 overflow-hidden rounded-2xl">
+            <img src="{{.ImagePath}}" 
+                 alt="{{.Description}}" 
+                 class="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110"
+                 loading="lazy">
+        </div>
+        <p class="text-[11px] text-stone-400 font-medium truncate group-hover:text-amber-600 transition-colors px-1">
+            {{.Description}}
+        </p>
+    </a>
+    {{else}}
+    <div class="col-span-full py-20 text-center">
+        <p class="text-stone-300 uppercase tracking-widest text-xs">No matches in the void</p>
+    </div>
+    {{end}}
+{{end}}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
@@ -43,7 +42,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	// handler init
+	// cache tmpl
+	templateCache, err := handlers.NewTemplateCache()
+	if err != nil {
+		slog.Error("模板缓存初始化失败", "err", err)
+		os.Exit(1)
+	}
+
+	// init handler
 	h := &handlers.Handler{
 		Engine: search.NewEngine(items),
 		Embed: embed.NewClient(
@@ -51,8 +57,7 @@ func main() {
 			os.Getenv("EMBEDDING_API_KEY"),
 			os.Getenv("EMBEDDING_MODEL"),
 		),
-		// tmpl 预解析
-		Tmpl: template.Must(template.ParseGlob("ui/html/**/*.tmpl")),
+		TemplateCache: templateCache,
 	}
 
 	// router reg

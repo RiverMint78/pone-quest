@@ -1,0 +1,85 @@
+:root {
+    --cream-bg: #fefcf9;
+    --soft-yellow: #fef3c7;
+    --deep-yellow: #fbbf24;
+    --soft-pink: #fff1f2;
+    --accent-pink: #fb7185;
+    --text-main: #44403c;
+}
+
+body {
+    background-color: var(--cream-bg);
+    color: var(--text-main);
+}
+
+.brand-title {
+    font-size: 4rem;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    font-style: italic;
+    position: relative;
+    display: inline-block;
+}
+
+.brand-quest {
+    color: var(--deep-yellow);
+    transition: all 0.5s ease;
+    position: relative;
+}
+
+.brand-title:hover .brand-quest {
+    color: var(--accent-pink);
+    text-shadow: 0 0 20px rgba(251, 113, 133, 0.2);
+}
+
+.brand-dot {
+    position: absolute;
+    top: -5px;
+    right: -15px;
+    width: 8px;
+    height: 8px;
+    background: var(--accent-pink);
+    border-radius: 50%;
+    animation: pulse-pink 2s infinite;
+}
+
+@keyframes pulse-pink {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.4);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(251, 113, 133, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(251, 113, 133, 0);
+    }
+}
+
+.result-card {
+    background: #ffffff;
+    border-radius: 2rem;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid #f5f5f4;
+}
+
+.result-card:hover {
+    background: var(--soft-pink);
+    border-color: var(--soft-yellow);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(251, 191, 36, 0.1);
+}
+
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 300ms ease;
+    pointer-events: none;
+}
+
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}

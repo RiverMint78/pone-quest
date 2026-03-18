@@ -5,23 +5,23 @@ import (
 	"math"
 	"sort"
 
-	"github.com/RiverMint78/pone-quest/internal/models"
+	"github.com/RiverMint78/pone-quest/internal/pone"
 )
 
 // Engine 是内存搜索引擎
 type Engine struct {
-	Items []models.ImageItem
+	Items []pone.ImageItem
 }
 
 // NewEngine 创建并初始化引擎
-func NewEngine(items []models.ImageItem) *Engine {
+func NewEngine(items []pone.ImageItem) *Engine {
 	return &Engine{Items: items}
 }
 
 // Search 执行向量相似度搜索并返回前 K 个结果
-func (e *Engine) Search(queryVec []float32, topK int) []models.ImageItem {
+func (e *Engine) Search(queryVec []float32, topK int) []pone.ImageItem {
 	type scoreItem struct {
-		item  models.ImageItem
+		item  pone.ImageItem
 		score float32
 	}
 
@@ -46,7 +46,7 @@ func (e *Engine) Search(queryVec []float32, topK int) []models.ImageItem {
 		resultLen = len(scores)
 	}
 
-	results := make([]models.ImageItem, resultLen)
+	results := make([]pone.ImageItem, resultLen)
 	for i := 0; i < resultLen; i++ {
 		results[i] = scores[i].item
 	}

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/RiverMint78/pone-quest/internal/embed"
-	"github.com/RiverMint78/pone-quest/internal/models"
+	"github.com/RiverMint78/pone-quest/internal/pone"
 	"github.com/RiverMint78/pone-quest/internal/store"
 
 	"github.com/joho/godotenv"
@@ -55,7 +55,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	var items []models.ImageItem
+	var items []pone.ImageItem
 	if err := json.Unmarshal(raw, &items); err != nil {
 		slog.Error("数据解析失败", "err", err)
 		os.Exit(1)

@@ -4,7 +4,7 @@ package store
 import (
 	"encoding/json"
 
-	"github.com/RiverMint78/pone-quest/internal/models"
+	"github.com/RiverMint78/pone-quest/internal/pone"
 	"go.etcd.io/bbolt"
 )
 
@@ -35,7 +35,7 @@ func (s *KVStore) Close() error {
 }
 
 // SaveImageItem 存入一条图片数据
-func (s *KVStore) SaveImageItem(item models.ImageItem) error {
+func (s *KVStore) SaveImageItem(item pone.ImageItem) error {
 	return s.db.Update(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte(bucketName))
 		buf, err := json.Marshal(item)
@@ -47,12 +47,12 @@ func (s *KVStore) SaveImageItem(item models.ImageItem) error {
 }
 
 // LoadAll 加载库中所有数据
-func (s *KVStore) LoadAll() ([]models.ImageItem, error) {
-	var items []models.ImageItem
+func (s *KVStore) LoadAll() ([]pone.ImageItem, error) {
+	var items []pone.ImageItem
 	err := s.db.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte(bucketName))
 		return b.ForEach(func(k, v []byte) error {
-			var item models.ImageItem
+			var item pone.ImageItem
 			if err := json.Unmarshal(v, &item); err == nil {
 				items = append(items, item)
 			}

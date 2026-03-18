@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/RiverMint78/pone-quest/internal/embed"
-	"github.com/RiverMint78/pone-quest/internal/handlers"
 	"github.com/RiverMint78/pone-quest/internal/search"
 	"github.com/RiverMint78/pone-quest/internal/store"
+	"github.com/RiverMint78/pone-quest/internal/web"
 
 	"github.com/joho/godotenv"
 )
@@ -53,14 +53,14 @@ func main() {
 	}
 
 	// cache tmpl
-	templateCache, err := handlers.NewTemplateCache()
+	templateCache, err := web.NewTemplateCache()
 	if err != nil {
 		slog.Error("模板缓存初始化失败", "err", err)
 		os.Exit(1)
 	}
 
 	// init handler
-	h := &handlers.Handler{
+	h := &web.Handler{
 		Engine: search.NewEngine(items),
 		Embed: embed.NewClient(
 			os.Getenv("PQ_EMBEDDING_API_URL"),

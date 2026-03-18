@@ -45,8 +45,14 @@ func NewClient(url, key, model string) *Client {
 
 // GetVector 获取图片描述的向量
 func (c *Client) GetVector(ctx context.Context, text string) ([]float32, error) {
-	if c.APIURL == "" || c.APIKey == "" {
-		return nil, fmt.Errorf("client 未配置完全: APIURL 或 APIKey 为空")
+	if c.APIURL == "" {
+		return nil, fmt.Errorf("missing APIURL")
+	}
+	if c.APIKey == "" {
+		return nil, fmt.Errorf("missing APIKey")
+	}
+	if c.Model == "" {
+		return nil, fmt.Errorf("missing Model")
 	}
 
 	reqBody := EmbeddingRequest{

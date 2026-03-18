@@ -1,11 +1,14 @@
 package web
 
 import (
+	"bytes"
 	"fmt"
 	"html/template"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	"github.com/RiverMint78/pone-quest/ui"
 )
@@ -32,21 +35,41 @@ func NewTemplateCache() (map[string]*template.Template, error) {
 			return nil, fmt.Errorf("解析模板 %s 失败: %w", name, err)
 		}
 		cache[name] = ts
+		slog.Debug("已编译模板页面", slog.String("name", name), slog.Any("patterns", patterns))
 	}
+	slog.Info("模板缓存初始化完成", slog.Int("total_pages", len(cache)))
 	return cache, nil
 }
 
 // render 处理渲染逻辑和错误响应
-func (h *Handler) render(w http.ResponseWriter, _ *http.Request, status int, page string, templateName string, data any) {
+func (h *Handler) render(w http.ResponseWriter, r *http.Request, status int, page string, templateName string, data any) {
+	start := time.Now()
+
 	ts, ok := h.TemplateCache[page]
 	if !ok {
 		http.Error(w, "模板不存在", http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(status)
-	err := ts.ExecuteTemplate(w, templateName, data)
+	buf := new(bytes.Buffer)
+	err := ts.ExecuteTemplate(buf, templateName, data)
+
 	if err != nil {
-		http.Error(w, "渲染失败", http.StatusInternalServerError)
+		h.Logger.ErrorContext(r.Context(), "执行模板渲染失败",
+			slog.String("page", page),
+			slog.String("target", templateName),
+			slog.Any("err", err))
+
+		http.Error(w, "服务器内部渲染错误", http.StatusInternalServerError)
+		return
 	}
+
+	w.WriteHeader(status)
+	buf.WriteTo(w)
+
+	h.Logger.DebugContext(r.Context(), "模板渲染成功",
+		slog.String("page", page),
+		slog.String("target", templateName),
+		slog.Duration("latency", time.Since(start)),
+	)
 }

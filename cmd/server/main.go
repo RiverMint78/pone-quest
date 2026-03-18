@@ -19,10 +19,16 @@ import (
 func main() {
 	// CLI parse
 	port := flag.Int("port", 8080, "HTTP service port")
+	debug := flag.Bool("debug", false, "Enable debug logging")
 	flag.Parse()
 
 	// init slog
+	level := slog.LevelInfo
+	if *debug {
+		level = slog.LevelDebug
+	}
 	opts := &slog.HandlerOptions{
+		Level: level,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.TimeKey {
 				return slog.String(a.Key, a.Value.Time().Format("2006-01-02 15:04:05"))
@@ -31,31 +37,30 @@ func main() {
 		},
 	}
 	logger := slog.New(slog.NewTextHandler(os.Stdout, opts))
-	slog.SetDefault(logger)
 
 	// load .env
 	if err := godotenv.Load(); err != nil {
-		slog.Warn("未找到 .env 配置文件")
+		logger.Warn("未找到 .env 配置文件")
 	}
 
 	// db init
 	db, err := store.New(os.Getenv("PQ_DATABASE"))
 	if err != nil {
-		slog.Error("打开数据库失败", "err", err)
+		logger.Error("打开数据库失败", "err", err)
 		os.Exit(1)
 	}
 	defer db.Close()
 
 	items, err := db.LoadAll()
 	if err != nil {
-		slog.Error("加载数据失败", "err", err)
+		logger.Error("加载数据失败", "err", err)
 		os.Exit(1)
 	}
 
 	// cache tmpl
 	templateCache, err := web.NewTemplateCache()
 	if err != nil {
-		slog.Error("模板缓存初始化失败", "err", err)
+		logger.Error("模板缓存初始化失败", "err", err)
 		os.Exit(1)
 	}
 
@@ -68,6 +73,7 @@ func main() {
 			os.Getenv("PQ_EMBEDDING_MODEL"),
 		),
 		TemplateCache: templateCache,
+		Logger:        logger,
 	}
 
 	// router reg
@@ -84,8 +90,8 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	slog.Info("PoneQuest 启动成功", "addr", srv.Addr)
+	logger.Info("PoneQuest 启动成功", "addr", srv.Addr)
 	if err := srv.ListenAndServe(); err != nil {
-		slog.Error("服务器关闭", "err", err)
+		logger.Error("服务器关闭", "err", err)
 	}
 }

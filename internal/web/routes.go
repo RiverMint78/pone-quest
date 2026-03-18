@@ -10,6 +10,9 @@ import (
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	h.Logger.Debug("正在注册路由映射...")
 
+	// 系统检查
+	mux.HandleFunc("GET /healthz", h.handleHealth)
+
 	// 业务逻辑
 	bizMux := http.NewServeMux()
 	bizMux.HandleFunc("GET /", h.handleIndex)

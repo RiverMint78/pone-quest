@@ -8,14 +8,6 @@ import (
 )
 
 func (h *Handler) handleIndex(w http.ResponseWriter, r *http.Request) {
-	start := time.Now()
-	defer func() {
-		h.Logger.DebugContext(r.Context(), "访问首页",
-			slog.Duration("latency", time.Since(start)),
-			slog.String("ip", r.RemoteAddr),
-			slog.String("method", r.Method),
-		)
-	}()
 	h.render(w, r, http.StatusOK, "index.tmpl", "base.tmpl", nil)
 }
 
@@ -62,7 +54,7 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	if isHTMX {
 		targetTemplate = "results.tmpl"
 	}
-	h.Logger.DebugContext(ctx, "准备渲染模板",
+	h.Logger.DebugContext(ctx, "完成搜索和渲染",
 		"target", targetTemplate,
 		"is_htmx", isHTMX,
 		"total_latency", time.Since(start),

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/RiverMint78/pone-quest/internal/embed"
@@ -35,6 +36,10 @@ func main() {
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.TimeKey {
 				return slog.String(a.Key, a.Value.Time().Format("2006-01-02 15:04:05"))
+			}
+			if a.Key == slog.SourceKey {
+				source := a.Value.Any().(*slog.Source)
+				return slog.String("src", fmt.Sprintf("%s:%d", filepath.Base(source.File), source.Line))
 			}
 			if a.Value.Kind() == slog.KindDuration {
 				d := a.Value.Duration()

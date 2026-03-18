@@ -34,5 +34,7 @@ go.work.sum
 # TMP FILE
 tmp.*
 
-# db
-*.db
+# data
+data/*
+!data/*.example
+!data/**/

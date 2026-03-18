@@ -35,9 +35,9 @@ func main() {
 
 	// init embed client
 	embClient := embed.NewClient(
-		os.Getenv("EMBEDDING_API_URL"),
-		os.Getenv("EMBEDDING_API_KEY"),
-		os.Getenv("EMBEDDING_MODEL"),
+		os.Getenv("PG_EMBEDDING_API_URL"),
+		os.Getenv("PG_EMBEDDING_API_KEY"),
+		os.Getenv("PG_EMBEDDING_MODEL"),
 	)
 
 	// open db
@@ -49,7 +49,7 @@ func main() {
 	defer db.Close()
 
 	// read data
-	raw, err := os.ReadFile("data/pones.json")
+	raw, err := os.ReadFile(os.Getenv("PG_IMAGEITEM"))
 	if err != nil {
 		slog.Error("读取数据源失败", "err", err)
 		os.Exit(1)

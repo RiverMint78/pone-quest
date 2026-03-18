@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -15,7 +17,11 @@ import (
 )
 
 func main() {
-	// init slog and env
+	// CLI parse
+	port := flag.Int("port", 8080, "HTTP service port")
+	flag.Parse()
+
+	// init slog
 	opts := &slog.HandlerOptions{
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.TimeKey {
@@ -26,10 +32,14 @@ func main() {
 	}
 	logger := slog.New(slog.NewTextHandler(os.Stdout, opts))
 	slog.SetDefault(logger)
-	_ = godotenv.Load()
+
+	// load .env
+	if err := godotenv.Load(); err != nil {
+		slog.Warn("未找到 .env 配置文件")
+	}
 
 	// db init
-	db, err := store.New("pone.db")
+	db, err := store.New(os.Getenv("PQ_DATABASE"))
 	if err != nil {
 		slog.Error("打开数据库失败", "err", err)
 		os.Exit(1)
@@ -53,9 +63,9 @@ func main() {
 	h := &handlers.Handler{
 		Engine: search.NewEngine(items),
 		Embed: embed.NewClient(
-			os.Getenv("EMBEDDING_API_URL"),
-			os.Getenv("EMBEDDING_API_KEY"),
-			os.Getenv("EMBEDDING_MODEL"),
+			os.Getenv("PQ_EMBEDDING_API_URL"),
+			os.Getenv("PQ_EMBEDDING_API_KEY"),
+			os.Getenv("PQ_EMBEDDING_MODEL"),
 		),
 		TemplateCache: templateCache,
 	}
@@ -65,8 +75,9 @@ func main() {
 	h.RegisterRoutes(mux)
 
 	// server launch
+	addr := fmt.Sprintf(":%d", *port)
 	srv := &http.Server{
-		Addr:         ":8080",
+		Addr:         addr,
 		Handler:      mux,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,

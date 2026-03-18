@@ -10,13 +10,17 @@ import (
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	h.Logger.Debug("正在注册路由映射...")
 
+	// 业务逻辑
+	bizMux := http.NewServeMux()
+	bizMux.HandleFunc("GET /", h.handleIndex)
+	bizMux.HandleFunc("GET /search", h.handleSearch)
+
 	// 静态资源
 	fileServer := http.FileServer(http.FS(ui.Files))
 	mux.Handle("GET /static/", fileServer)
 
-	// 业务路由
-	mux.HandleFunc("GET /", h.handleIndex)
-	mux.HandleFunc("GET /search", h.handleSearch)
+	// 添加 Recover
+	mux.Handle("/", h.RecoverMiddleware(bizMux))
 
 	h.Logger.Debug("路由注册完成")
 }

@@ -38,3 +38,6 @@ tmp.*
 data/*
 !data/*.example
 !data/**/
+
+# some scripts
+*.py

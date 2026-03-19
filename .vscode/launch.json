@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Indexer",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/indexer/main.go",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PATH": "${workspaceFolder};${env:PATH}"
+            }
+        },
+        {
+            "name": "Debug Server",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/server/main.go",
+            "args": [
+                "-debug",
+                "-port=4000"
+            ],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "GOMEMLIMIT": "800MiB",
+                "PATH": "${workspaceFolder};${env:PATH}"
+            }
+        }
+    ]
+}

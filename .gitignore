@@ -39,6 +39,7 @@ tmp.*
 data/**/*
 !data/**/*.example
 !data/**/
+!data/**/*.sh
 
 # some scripts
 *.py

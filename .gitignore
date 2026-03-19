@@ -35,8 +35,8 @@ go.work.sum
 tmp.*
 
 # data
-data/*
-!data/*.example
+data/**/*
+!data/**/*.example
 !data/**/
 
 # some scripts

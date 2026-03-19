@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -12,14 +13,31 @@ func (h *Handler) handleIndex(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
+	isHTMX := r.Header.Get("HX-Request") != ""
+	targetTemplate := "base.tmpl"
+	if isHTMX {
+		targetTemplate = "results.tmpl"
+	}
+
 	query := r.URL.Query().Get("q")
+
+	// 解析topK
+	topKStr := r.URL.Query().Get("topK")
+	topK, err := strconv.Atoi(topKStr)
+	if err != nil {
+		topK = 10
+	}
+	topK = max(5, min(50, topK))
+
 	h.Logger.Debug("收到搜索请求",
 		"query", query,
+		"topK", topK,
+		"is_htmx", isHTMX,
 		"UA", r.UserAgent(),
 	)
 
 	if query == "" {
-		h.render(w, r, http.StatusOK, "index.tmpl", "base.tmpl", nil)
+		h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, nil)
 		return
 	}
 
@@ -39,7 +57,7 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 	// 索引检索
 	searchStart := time.Now()
-	ids := h.Engine.Search(vec, 12)
+	ids := h.Engine.Search(vec, topK)
 	h.Logger.Debug("索引检索完成",
 		"count", len(ids),
 		"elapsed", time.Since(searchStart),
@@ -47,8 +65,8 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 	results := ids
 
-	// // ID -> 渲染对象?
-	// // TODO: 添加描述等
+	// ID -> 渲染对象?
+	// TODO: 添加描述等
 	// results := make([]pone.ImageItem, len(ids))
 	// for i, id := range ids {
 	// 	results[i] = pone.ImageItem{
@@ -56,13 +74,7 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	// 	}
 	// }
 
-	// 渲染
-	targetTemplate := "base.tmpl"
-	isHTMX := r.Header.Get("HX-Request") != ""
-	if isHTMX {
-		targetTemplate = "results.tmpl"
-	}
-
+	// 渲染结果
 	h.Logger.Debug("完成搜索和渲染",
 		"target", targetTemplate,
 		"is_htmx", isHTMX,

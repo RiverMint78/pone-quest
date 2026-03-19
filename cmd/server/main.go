@@ -11,10 +11,10 @@ import (
 
 	"github.com/RiverMint78/pone-quest/internal/embed"
 	"github.com/RiverMint78/pone-quest/internal/search"
-	"github.com/RiverMint78/pone-quest/internal/store"
 	"github.com/RiverMint78/pone-quest/internal/web"
 
 	"github.com/joho/godotenv"
+	ksearch "github.com/kelindar/search"
 )
 
 func main() {
@@ -56,20 +56,6 @@ func main() {
 		logger.Warn("未找到 .env 配置文件")
 	}
 
-	// db init
-	db, err := store.New(os.Getenv("PQ_DATABASE"))
-	if err != nil {
-		logger.Error("打开数据库失败", "err", err)
-		os.Exit(1)
-	}
-	defer db.Close()
-
-	items, err := db.LoadAll()
-	if err != nil {
-		logger.Error("加载数据失败", "err", err)
-		os.Exit(1)
-	}
-
 	// cache tmpl
 	templateCache, err := web.NewTemplateCache()
 	if err != nil {
@@ -77,14 +63,50 @@ func main() {
 		os.Exit(1)
 	}
 
+	// init local embed
+	modelPath := os.Getenv("PQ_EMBEDDING_MODEL")
+	if modelPath == "" {
+		logger.Error("missing PQ_EMBEDDING_MODEL")
+		os.Exit(1)
+	}
+	embClient, err := embed.NewClient(modelPath, 0)
+	if err != nil {
+		logger.Error("加载本地模型失败", "err", err)
+		os.Exit(1)
+	}
+	defer embClient.Close()
+
+	// local embed health check
+	testVec, err := embClient.GetVector("thumbs")
+	if err != nil {
+		logger.Error("无法产生测试向量", "err", err)
+		os.Exit(1)
+	}
+
+	// init idx
+	indexPath := os.Getenv("PQ_INDEX_FILE")
+	if indexPath == "" {
+		logger.Error("missing PQ_INDEX_FILE")
+		os.Exit(1)
+	}
+	idx := ksearch.NewIndex[string]()
+	if err := idx.ReadFile(indexPath); err != nil {
+		logger.Error("索引加载失败", "err", err)
+		os.Exit(1)
+	}
+	logger.Info("索引加载完毕", "size", idx.Len())
+
+	// init search
+	searchEngine := search.NewEngine(idx)
+
+	// search health check
+	testRes := searchEngine.Search(testVec, 5)
+	logger.Debug("搜索健康检查", "count", len(testRes), "top_result", testRes)
+
 	// init handler
 	h := &web.Handler{
-		Engine: search.NewEngine(items),
-		Embed: embed.NewClient(
-			os.Getenv("PQ_EMBEDDING_API_URL"),
-			os.Getenv("PQ_EMBEDDING_API_KEY"),
-			os.Getenv("PQ_EMBEDDING_MODEL"),
-		),
+		Engine:        searchEngine,
+		Embed:         embClient,
 		TemplateCache: templateCache,
 		Logger:        logger,
 	}

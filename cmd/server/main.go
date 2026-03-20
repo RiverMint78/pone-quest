@@ -69,7 +69,11 @@ func main() {
 		logger.Error("missing PQ_EMBEDDING_MODEL")
 		os.Exit(1)
 	}
-	embClient, err := embed.NewClient(modelPath, 0)
+	embInstruction := os.Getenv("PQ_QUERY_INSTRUCTION")
+	if embInstruction != "" {
+		logger.Info("使用查询前缀", "prefix", embInstruction)
+	}
+	embClient, err := embed.NewClient(modelPath, embInstruction)
 	if err != nil {
 		logger.Error("加载本地模型失败", "err", err)
 		os.Exit(1)
@@ -77,7 +81,7 @@ func main() {
 	defer embClient.Close()
 
 	// local embed health check
-	testVec, err := embClient.GetVector("thumbs")
+	testVec, err := embClient.GetVector("thumbs", true)
 	if err != nil {
 		logger.Error("无法产生测试向量", "err", err)
 		os.Exit(1)

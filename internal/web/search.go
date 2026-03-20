@@ -43,7 +43,7 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 	// 本地向量化
 	embedStart := time.Now()
-	vec, err := h.Embed.GetVector(query)
+	vec, err := h.Embed.GetVector(query, true)
 	if err != nil {
 		h.Logger.Error("向量化失败",
 			"query", query,

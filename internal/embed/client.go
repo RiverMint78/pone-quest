@@ -23,19 +23,19 @@ type EmbeddingResponse struct {
 // Client 封装本地 Vectorizer
 type Client struct {
 	vectorizer *ksearch.Vectorizer
+	prefix     string
 }
 
-// NewClient 加载本地 GGUF 模型
-// modelPath: 模型文件路径
-// gpuLayers: GPU 加速层数 (0 表示纯 CPU)
-func NewClient(modelPath string, gpuLayers int) (*Client, error) {
-	m, err := ksearch.NewVectorizer(modelPath, gpuLayers)
+// NewClient 加载本地 GGUF 模型并预设指令
+func NewClient(modelPath string, instruction string) (*Client, error) {
+	// 不考虑 GPU 推理
+	m, err := ksearch.NewVectorizer(modelPath, 0)
 	if err != nil {
-		return nil, fmt.Errorf("初始化模型 %s 失败: %w", modelPath, err)
+		return nil, fmt.Errorf("init model error: %w", err)
 	}
-
 	return &Client{
 		vectorizer: m,
+		prefix:     instruction,
 	}, nil
 }
 
@@ -47,10 +47,10 @@ func (c *Client) Close() {
 }
 
 // GetVector 获取文本描述的向量
-func (c *Client) GetVector(text string) ([]float32, error) {
-	vec, err := c.vectorizer.EmbedText(text)
-	if err != nil {
-		return nil, fmt.Errorf("生成文本向量失败: %w", err)
+func (c *Client) GetVector(text string, isQuery bool) ([]float32, error) {
+	input := text
+	if isQuery && c.prefix != "" {
+		input = c.prefix + text
 	}
-	return vec, nil
+	return c.vectorizer.EmbedText(input)
 }

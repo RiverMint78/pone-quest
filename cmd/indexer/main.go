@@ -42,7 +42,7 @@ func main() {
 		logger.Error("missing PQ_EMBEDDING_MODEL")
 		os.Exit(1)
 	}
-	embClient, err := embed.NewClient(modelPath, 0)
+	embClient, err := embed.NewClient(modelPath, "")
 	if err != nil {
 		logger.Error("加载本地模型失败", "err", err)
 		os.Exit(1)
@@ -69,7 +69,7 @@ func main() {
 		l := logger.With("id", item.ID, "at", fmt.Sprintf("%d/%d", i+1, len(items)))
 
 		l.Info("请求向量")
-		vec, err := embClient.GetVector(item.Description)
+		vec, err := embClient.GetVector(item.Description, false)
 		if err != nil {
 			l.Warn("向量获取失败", "err", err)
 			continue

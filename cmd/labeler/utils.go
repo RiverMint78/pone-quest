@@ -1,17 +1,18 @@
 package main
 
 import (
-	"bytes"
+	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"io"
 	"mime"
-	"net/http"
+	neturl "net/url"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/openai/openai-go"
+	"github.com/openai/openai-go/option"
 )
 
 func isImage(name string) bool {
@@ -28,7 +29,32 @@ func getMimeType(ext string) string {
 	return t
 }
 
-func requestAPILabel(url, key, path string) (string, error) {
+func normalizeOpenAIBaseURL(rawURL string) string {
+	trimmed := strings.TrimSpace(rawURL)
+	if trimmed == "" {
+		return ""
+	}
+
+	u, err := neturl.Parse(trimmed)
+	if err != nil {
+		return strings.TrimRight(trimmed, "/")
+	}
+
+	cleanPath := strings.TrimRight(u.Path, "/")
+	for _, suffix := range []string{"/chat/completions", "/completions"} {
+		if strings.HasSuffix(cleanPath, suffix) {
+			cleanPath = strings.TrimSuffix(cleanPath, suffix)
+			break
+		}
+	}
+	u.Path = strings.TrimRight(cleanPath, "/")
+	u.RawQuery = ""
+	u.Fragment = ""
+
+	return strings.TrimRight(u.String(), "/")
+}
+
+func requestAPILabel(apiURL, key, path string) (string, error) {
 	// image to BASE64
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -44,66 +70,41 @@ func requestAPILabel(url, key, path string) (string, error) {
 	prompt := os.Getenv("PQ_LABELER_PROMPT")
 	model := os.Getenv("PQ_LABELER_MODEL")
 
-	reqBody := ChatRequest{
-		Model: model,
-		Messages: []Message{
-			{
-				Role: "user",
-				Content: []ContentPart{
-					{
-						Type: "image_url",
-						ImageURL: &ImageURLConfig{
-							URL:    dataURL,
-							Detail: "low",
-						},
-					},
-					{
-						Type: "text",
-						Text: prompt,
-					},
-				},
-			},
+	clientOpts := []option.RequestOption{
+		option.WithAPIKey(key),
+		option.WithRequestTimeout(30 * time.Second),
+	}
+	if baseURL := normalizeOpenAIBaseURL(apiURL); baseURL != "" {
+		clientOpts = append(clientOpts, option.WithBaseURL(baseURL))
+	}
+
+	client := openai.NewClient(clientOpts...)
+	resp, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
+		Model: openai.ChatModel(model),
+		Messages: []openai.ChatCompletionMessageParamUnion{
+			openai.UserMessage([]openai.ChatCompletionContentPartUnionParam{
+				openai.ImageContentPart(openai.ChatCompletionContentPartImageImageURLParam{
+					URL:    dataURL,
+					Detail: "low",
+				}),
+				openai.TextContentPart(prompt),
+			}),
 		},
-	}
-
-	jsonData, err := json.Marshal(reqBody)
+	})
 	if err != nil {
-		return "", fmt.Errorf("序列化 JSON 失败: %w", err)
+		return "", fmt.Errorf("API 请求失败: %w", err)
 	}
 
-	// 发送 HTTP 请求
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return "", fmt.Errorf("创建请求失败: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+key)
-
-	client := &http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("网络请求失败: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return "", fmt.Errorf("API 错误 (状态码 %d): %s", resp.StatusCode, string(body))
-	}
-
-	// 解析结果
-	var chatResp ChatResponse
-	if err := json.NewDecoder(resp.Body).Decode(&chatResp); err != nil {
-		return "", fmt.Errorf("解码响应失败: %w", err)
-	}
-
-	if len(chatResp.Choices) == 0 {
+	if len(resp.Choices) == 0 {
 		return "", fmt.Errorf("API 未返回有效内容")
 	}
 
+	description := strings.TrimSpace(resp.Choices[0].Message.Content)
+	if description == "" {
+		return "", fmt.Errorf("API 返回为空")
+	}
+
 	// 清理描述
-	description := strings.TrimSpace(chatResp.Choices[0].Message.Content)
 	description = strings.ReplaceAll(description, "\n", " ")
 
 	return description, nil

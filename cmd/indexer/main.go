@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/RiverMint78/pone-quest/internal/embed"
 	"github.com/RiverMint78/pone-quest/internal/pone"
@@ -36,6 +39,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	episodeFile := os.Getenv("PQ_EPISODEITEM_FILE")
+	if episodeFile == "" {
+		logger.Error("missing PQ_EPISODEITEM_FILE")
+		os.Exit(1)
+	}
+
 	// init local embed client
 	modelPath := os.Getenv("PQ_EMBEDDING_MODEL")
 	if modelPath == "" {
@@ -49,33 +58,58 @@ func main() {
 	}
 	defer embClient.Close()
 
-	// read image descriptions
-	raw, err := os.ReadFile(os.Getenv("PQ_IMAGEITEM_FILE"))
+	raw, err := os.ReadFile(episodeFile)
 	if err != nil {
 		logger.Error("读取数据源失败", "err", err)
 		os.Exit(1)
 	}
 
-	var items []pone.ImageItem
-	if err := json.Unmarshal(raw, &items); err != nil {
+	var episodes map[int]pone.EpisodeItem
+	if err := json.Unmarshal(raw, &episodes); err != nil {
 		logger.Error("数据解析失败", "err", err)
 		os.Exit(1)
 	}
 
 	idx := ksearch.NewIndex[string]()
-	logger.Info("开始执行索引任务", "count", len(items))
 
-	for i, item := range items {
-		l := logger.With("id", item.ID, "at", fmt.Sprintf("%d/%d", i+1, len(items)))
+	ids := make([]int, 0, len(episodes))
+	for id := range episodes {
+		ids = append(ids, id)
+	}
+	sort.Ints(ids)
 
-		l.Info("请求向量")
-		vec, err := embClient.GetVector(item.Description, false)
-		if err != nil {
-			l.Warn("向量获取失败", "err", err)
-			continue
+	totalLines := 0
+	for _, id := range ids {
+		for _, line := range episodes[id].Transcript {
+			if strings.TrimSpace(line.Line) != "" {
+				totalLines++
+			}
 		}
+	}
+	logger.Info("开始执行索引任务", "episodes", len(ids), "lines", totalLines)
 
-		idx.Add(vec, item.ID)
+	processed := 0
+	for _, episodeID := range ids {
+		ep := episodes[episodeID]
+		for i, line := range ep.Transcript {
+			text := strings.TrimSpace(line.Line)
+			if text == "" {
+				continue
+			}
+
+			processed++
+			lineID := pone.MakeLineID(episodeID, i+1)
+			l := logger.With("line_id", lineID, "at", fmt.Sprintf("%d/%d", processed, totalLines))
+
+			l.Info("请求向量")
+			vec, err := embClient.GetVector(text, false)
+			if err != nil {
+				l.Warn("向量获取失败", "err", err)
+				continue
+			}
+
+			idx.Add(vec, strconv.Itoa(lineID))
+		}
 	}
 
 	logger.Info("开始写入索引", "path", indexPath)

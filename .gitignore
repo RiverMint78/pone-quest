@@ -40,7 +40,7 @@ data/**/*
 !data/**/*.example
 !data/**/
 !data/**/*.sh
-!data/images/thumbs_up.jpg
+!data/episodes.json
 
 # some scripts
 *.py

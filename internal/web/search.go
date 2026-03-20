@@ -3,6 +3,7 @@ package web
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -19,7 +20,7 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 		targetTemplate = "results.tmpl"
 	}
 
-	query := r.URL.Query().Get("q")
+	rawQuery := strings.TrimSpace(r.URL.Query().Get("q"))
 
 	// 解析topK
 	topKStr := r.URL.Query().Get("topK")
@@ -30,15 +31,29 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	topK = max(5, min(50, topK))
 
 	h.Logger.Debug("收到搜索请求",
-		"query", query,
+		"query", rawQuery,
 		"topK", topK,
 		"is_htmx", isHTMX,
 		"UA", r.UserAgent(),
 	)
 
-	if query == "" {
+	if rawQuery == "" {
 		h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, nil)
 		return
+	}
+
+	const maxRunes = 200
+	query := rawQuery
+	runeCount := 0
+
+	for i := range rawQuery {
+		// loop for utf-8
+		if runeCount == maxRunes {
+			query = rawQuery[:i]
+			h.Logger.Warn("截断超长输入", "original_bytes", len(rawQuery))
+			break
+		}
+		runeCount++
 	}
 
 	// 本地向量化

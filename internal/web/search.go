@@ -57,9 +57,9 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 	// 索引检索
 	searchStart := time.Now()
-	ids := h.Engine.Search(vec, topK)
+	results := h.Engine.Search(vec, topK)
 	h.Logger.Debug("索引检索完成",
-		"count", len(ids),
+		"count", len(results),
 		"elapsed", time.Since(searchStart),
 	)
 
@@ -70,5 +70,5 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 		"total_latency", time.Since(start),
 	)
 
-	h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, ids)
+	h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, results)
 }

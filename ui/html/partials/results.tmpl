@@ -1,21 +1,37 @@
 {{define "results.tmpl"}}
 {{range .}}
-{{$path := printf "/static/images/%s" .}}
+{{$path := printf "/static/images/%s" .ID}}
 
-<a href="{{$path}}" target="_blank" class="result-card group p-5 block">
-    <div class="aspect-square flex items-center justify-center mb-4 overflow-hidden rounded-2xl bg-stone-50">
-        <img src="{{$path}}" alt="Image {{.}}"
-            class="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110"
-            loading="lazy">
+<a href="{{$path}}" target="_blank" title="File: {{.ID}}" class="result-card block border border-stone-100 bg-white hover:border-amber-200 shadow-sm hover:shadow-md transition-shadow">
+    <div class="aspect-square w-full overflow-hidden">
+        <img src="{{$path}}" alt="{{.ID}}"
+            class="w-full h-full object-cover"
+            loading="lazy" decoding="async">
     </div>
-    <p
-        class="text-[10px] text-stone-400 font-mono truncate text-center opacity-0 group-hover:opacity-100 transition-opacity">
-        {{.}}
-    </p>
+    
+    <div class="px-4 py-4 flex items-center justify-center font-mono text-xs border-t border-stone-50 bg-white">
+        {{if gt .Score 0.80}}
+            <span class="score-tag text-blue-700 font-bold bg-blue-50 px-3 py-1.5 whitespace-nowrap border border-blue-100">
+                SIM: {{printf "%.4f" .Score}}
+            </span>
+        {{else if gt .Score 0.65}}
+            <span class="score-tag text-emerald-700 font-bold bg-emerald-50 px-3 py-1.5 whitespace-nowrap border border-emerald-100">
+                SIM: {{printf "%.4f" .Score}}
+            </span>
+        {{else if gt .Score 0.40}}
+            <span class="score-tag text-amber-700 font-bold bg-amber-50 px-3 py-1.5 whitespace-nowrap border border-amber-100">
+                SIM: {{printf "%.4f" .Score}}
+            </span>
+        {{else}}
+            <span class="score-tag text-stone-500 font-medium bg-stone-50 px-3 py-1.5 whitespace-nowrap border border-stone-100">
+                SIM: {{printf "%.4f" .Score}}
+            </span>
+        {{end}}
+    </div>
 </a>
 {{else}}
-<div class="col-span-full py-20 text-center">
-    <div class="mb-4 text-3xl">🏜️</div>
+<div class="col-span-full py-20 text-center border border-dashed border-stone-200">
+    <div class="mb-2 text-3xl">🏜️</div>
     <p class="text-stone-300 uppercase tracking-widest text-xs">No matches in the void</p>
 </div>
 {{end}}

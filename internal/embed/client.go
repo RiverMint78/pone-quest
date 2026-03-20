@@ -4,6 +4,7 @@ package embed
 import (
 	"fmt"
 
+	lru "github.com/hashicorp/golang-lru/v2"
 	ksearch "github.com/kelindar/search"
 )
 
@@ -24,18 +25,25 @@ type EmbeddingResponse struct {
 type Client struct {
 	vectorizer *ksearch.Vectorizer
 	prefix     string
+	cache      *lru.Cache[string, []float32]
 }
 
 // NewClient 加载本地 GGUF 模型并预设指令
 func NewClient(modelPath string, instruction string) (*Client, error) {
 	// 不考虑 GPU 推理
-	m, err := ksearch.NewVectorizer(modelPath, 0)
+	vectorizer, err := ksearch.NewVectorizer(modelPath, 0)
 	if err != nil {
 		return nil, fmt.Errorf("init model error: %w", err)
 	}
+	cache, err := lru.New[string, []float32](4096)
+	if err != nil {
+		return nil, fmt.Errorf("init cache error: %w", err)
+	}
+
 	return &Client{
-		vectorizer: m,
+		vectorizer: vectorizer,
 		prefix:     instruction,
+		cache:      cache,
 	}, nil
 }
 
@@ -52,5 +60,20 @@ func (c *Client) GetVector(text string, isQuery bool) ([]float32, error) {
 	if isQuery && c.prefix != "" {
 		input = c.prefix + text
 	}
-	return c.vectorizer.EmbedText(input)
+
+	// cache read
+	if vec, ok := c.cache.Get(input); ok {
+		return vec, nil
+	}
+
+	// cache miss
+	vec, err := c.vectorizer.EmbedText(input)
+	if err != nil {
+		return nil, err
+	}
+
+	// cache add
+	c.cache.Add(input, vec)
+
+	return vec, nil
 }

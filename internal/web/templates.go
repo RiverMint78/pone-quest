@@ -37,7 +37,7 @@ func NewTemplateCache() (map[string]*template.Template, error) {
 		cache[name] = ts
 		slog.Debug("已编译模板页面", slog.String("name", name), slog.Any("patterns", patterns))
 	}
-	slog.Info("模板缓存初始化完成", slog.Int("total_pages", len(cache)))
+	slog.Debug("模板缓存初始化完成", slog.Int("total_pages", len(cache)))
 	return cache, nil
 }
 

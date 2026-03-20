@@ -1,38 +1,45 @@
 {{define "results.tmpl"}}
 {{range .}}
-{{$path := printf "/static/images/%s" .ID}}
+{{$path := printf "/images/%s" .ID}}
 
-<a href="{{$path}}" target="_blank" title="File: {{.ID}}" class="result-card block border border-stone-100 bg-white hover:border-amber-200 shadow-sm hover:shadow-md transition-shadow">
-    <div class="aspect-square w-full overflow-hidden">
-        <img src="{{$path}}" alt="{{.ID}}"
-            class="w-full h-full object-cover"
-            loading="lazy" decoding="async">
-    </div>
-    
-    <div class="px-4 py-4 flex items-center justify-center font-mono text-xs border-t border-stone-50 bg-white">
+<a href="{{$path}}" target="_blank" title="File: {{.ID}}"
+    class="result-card block relative break-inside-avoid bg-white border border-stone-100 shadow-sm hover:shadow transition-shadow duration-200 group mb-6 cursor-zoom-in"
+    data-full-image="{{$path}}">
+
+    <img src="{{$path}}" alt="{{.ID}}"
+        class="w-full h-auto object-contain bg-stone-200 animate-pulse text-transparent min-h-[100px] transition-opacity duration-200 group-hover:opacity-95"
+        onload="this.classList.remove('bg-stone-200', 'animate-pulse', 'text-transparent', 'min-h-[100px]');"
+        loading="lazy" decoding="async">
+
+    <div class="absolute top-2 right-2 pointer-events-none">
         {{if gt .Score 0.80}}
-            <span class="score-tag text-blue-700 font-bold bg-blue-50 px-3 py-1.5 whitespace-nowrap border border-blue-100">
-                SIM: {{printf "%.4f" .Score}}
-            </span>
+        <span
+            class="score-tag backdrop-blur-md bg-blue-50/90 text-blue-700 font-bold px-2 py-1 border border-blue-200/50 shadow-sm text-xs transition-transform duration-200">
+            SIM: {{printf "%.4f" .Score}}
+        </span>
         {{else if gt .Score 0.65}}
-            <span class="score-tag text-emerald-700 font-bold bg-emerald-50 px-3 py-1.5 whitespace-nowrap border border-emerald-100">
-                SIM: {{printf "%.4f" .Score}}
-            </span>
+        <span
+            class="score-tag backdrop-blur-md bg-emerald-50/90 text-emerald-700 font-bold px-2 py-1 border border-emerald-200/50 shadow-sm text-xs transition-transform duration-200">
+            SIM: {{printf "%.4f" .Score}}
+        </span>
         {{else if gt .Score 0.40}}
-            <span class="score-tag text-amber-700 font-bold bg-amber-50 px-3 py-1.5 whitespace-nowrap border border-amber-100">
-                SIM: {{printf "%.4f" .Score}}
-            </span>
+        <span
+            class="score-tag backdrop-blur-md bg-amber-50/90 text-amber-700 font-bold px-2 py-1 border border-amber-200/50 shadow-sm text-xs transition-transform duration-200">
+            SIM: {{printf "%.4f" .Score}}
+        </span>
         {{else}}
-            <span class="score-tag text-stone-500 font-medium bg-stone-50 px-3 py-1.5 whitespace-nowrap border border-stone-100">
-                SIM: {{printf "%.4f" .Score}}
-            </span>
+        <span
+            class="score-tag backdrop-blur-md bg-stone-50/90 text-stone-600 font-medium px-2 py-1 border border-stone-200/50 shadow-sm text-xs transition-transform duration-200">
+            SIM: {{printf "%.4f" .Score}}
+        </span>
         {{end}}
     </div>
 </a>
 {{else}}
-<div class="col-span-full py-20 text-center border border-dashed border-stone-200">
-    <div class="mb-2 text-3xl">🏜️</div>
-    <p class="text-stone-300 uppercase tracking-widest text-xs">No matches in the void</p>
+<div
+    class="inline-block w-full py-20 text-center border border-dashed border-stone-200 break-inside-avoid bg-stone-50/50">
+    <div class="mb-2 text-3xl opacity-80">🏜️</div>
+    <p class="text-stone-400 uppercase tracking-widest text-xs">No matches in the void</p>
 </div>
 {{end}}
 {{end}}

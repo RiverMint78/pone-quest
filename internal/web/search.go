@@ -63,17 +63,6 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 		"elapsed", time.Since(searchStart),
 	)
 
-	results := ids
-
-	// ID -> 渲染对象?
-	// TODO: 添加描述等
-	// results := make([]pone.ImageItem, len(ids))
-	// for i, id := range ids {
-	// 	results[i] = pone.ImageItem{
-	// 		ID: id,
-	// 	}
-	// }
-
 	// 渲染结果
 	h.Logger.Debug("完成搜索和渲染",
 		"target", targetTemplate,
@@ -81,5 +70,5 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 		"total_latency", time.Since(start),
 	)
 
-	h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, results)
+	h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, ids)
 }

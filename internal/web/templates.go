@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/RiverMint78/pone-quest/ui"
@@ -41,6 +42,10 @@ func NewTemplateCache() (map[string]*template.Template, error) {
 	return cache, nil
 }
 
+var bufPool = sync.Pool{
+	New: func() any { return new(bytes.Buffer) },
+}
+
 // render 处理渲染逻辑和错误响应
 func (h *Handler) render(w http.ResponseWriter, r *http.Request, status int, page string, templateName string, data any) {
 	start := time.Now()
@@ -51,7 +56,11 @@ func (h *Handler) render(w http.ResponseWriter, r *http.Request, status int, pag
 		return
 	}
 
-	buf := new(bytes.Buffer)
+	// Buffer from Pool
+	buf := bufPool.Get().(*bytes.Buffer)
+	buf.Reset()
+	defer bufPool.Put(buf)
+
 	err := ts.ExecuteTemplate(buf, templateName, data)
 
 	if err != nil {

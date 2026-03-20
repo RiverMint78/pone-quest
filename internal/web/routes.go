@@ -20,7 +20,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 
 	// 静态资源
 	fileServer := http.FileServer(http.FS(ui.Files))
-	mux.Handle("GET /static/", fileServer)
+	mux.Handle("GET /static/", h.StaticCacheMiddleware(fileServer))
 
 	// 添加 Recover
 	mux.Handle("/", h.RecoverMiddleware(bizMux))

@@ -23,11 +23,6 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	fileServer := http.FileServer(http.FS(ui.Files))
 	mux.Handle("GET /static/", h.StaticCacheMiddleware(fileServer))
 
-	// 图片资源
-	imageDir := http.Dir("./data/images")
-	imageServer := http.StripPrefix("/images/", http.FileServer(imageDir))
-	mux.Handle("GET /images/", h.StaticCacheMiddleware(imageServer))
-
 	// 添加 Recover
 	mux.Handle("/", h.RecoverMiddleware(bizMux))
 

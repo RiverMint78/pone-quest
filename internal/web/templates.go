@@ -74,7 +74,7 @@ func (h *Handler) render(w http.ResponseWriter, r *http.Request, status int, pag
 	}
 
 	w.WriteHeader(status)
-	buf.WriteTo(w)
+	_, _ = buf.WriteTo(w)
 
 	h.Logger.DebugContext(r.Context(), "模板渲染成功",
 		slog.String("page", page),

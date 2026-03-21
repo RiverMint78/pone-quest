@@ -17,6 +17,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	bizMux := http.NewServeMux()
 	bizMux.HandleFunc("GET /", h.handleIndex)
 	bizMux.HandleFunc("GET /search", h.handleSearch)
+	bizMux.HandleFunc("GET /episode", h.handleEpisode)
 
 	// 静态资源
 	fileServer := http.FileServer(http.FS(ui.Files))

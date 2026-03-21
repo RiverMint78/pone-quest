@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/RiverMint78/pone-quest/internal/embed"
+	"github.com/RiverMint78/pone-quest/internal/pone"
 	"github.com/RiverMint78/pone-quest/internal/search"
 	"github.com/RiverMint78/pone-quest/internal/web"
 
@@ -56,19 +57,26 @@ func main() {
 		logger.Warn("未找到 .env 配置文件")
 	}
 
-	// cache tmpl
-	templateCache, err := web.NewTemplateCache()
-	if err != nil {
-		logger.Error("模板缓存初始化失败", "err", err)
-		os.Exit(1)
-	}
-
 	// init local embed
 	modelPath := os.Getenv("PQ_EMBEDDING_MODEL")
 	if modelPath == "" {
 		logger.Error("missing PQ_EMBEDDING_MODEL")
 		os.Exit(1)
 	}
+
+	episodeFile := os.Getenv("PQ_EPISODEITEM_FILE")
+	if episodeFile == "" {
+		logger.Error("missing PQ_EPISODEITEM_FILE")
+		os.Exit(1)
+	}
+
+	store, err := pone.LoadTranscriptStore(episodeFile)
+	if err != nil {
+		logger.Error("Transcript加载失败", "err", err)
+		os.Exit(1)
+	}
+	logger.Info("Transcript加载完毕", "episodes", len(store.Episodes), "lines", len(store.Lines))
+
 	embInstruction := os.Getenv("PQ_QUERY_INSTRUCTION")
 	if embInstruction != "" {
 		logger.Info("使用查询前缀", "prefix", embInstruction)
@@ -108,11 +116,10 @@ func main() {
 	logger.Debug("搜索健康检查", "count", len(testRes), "top_result", testRes)
 
 	// init handler
-	h := &web.Handler{
-		Engine:        searchEngine,
-		Embed:         embClient,
-		TemplateCache: templateCache,
-		Logger:        logger,
+	h, err := web.New(searchEngine, embClient, store, logger)
+	if err != nil {
+		logger.Error("处理器初始化失败", "err", err)
+		os.Exit(1)
 	}
 
 	// router reg

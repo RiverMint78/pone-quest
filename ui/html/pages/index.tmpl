@@ -2,54 +2,46 @@
 <div class="flex flex-col md:flex-row min-h-screen bg-stone-50/30">
 
     <aside id="sidebar"
-        class="relative flex-shrink-0 bg-white border-r border-stone-100 p-6 flex flex-col sticky top-0 md:h-screen md:overflow-y-auto z-10 shadow-sm min-w-[320px] w-80 max-w-2xl">
+        class="relative flex-shrink-0 bg-white border-r border-stone-100 p-6 flex flex-col sticky top-0 md:h-screen md:overflow-y-auto z-10 shadow-sm w-full min-w-0 md:min-w-[320px] md:w-80 md:max-w-2xl">
 
-        <header class="mb-8 flex justify-between items-center select-none">
+        <header id="sidebar-brand" class="mb-8 flex justify-between items-center select-none">
             <div>
                 <h1 class="brand-title text-4xl">Pone<span class="brand-quest">Quest</span><span
                         class="brand-dot"></span></h1>
-                <div class="h-1 w-12 bg-amber-100 mt-1"></div>
+                <div class="h-1 w-12 bg-accent-soft-20 mt-1"></div>
             </div>
         </header>
 
         <div class="space-y-6">
-            <button id="toggle-search"
-                class="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-stone-500 hover:bg-stone-50 transition-colors border border-stone-100 rounded-md md:hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" class="lucide-chevrons-up-down">
-                    <path d="m7 15 5 5 5-5"></path>
-                    <path d="m7 9 5-5 5 5"></path>
-                </svg>
-                展开/收缩查询框
-            </button>
-
             <div id="search-content" class="space-y-6">
                 <div class="space-y-2">
                     <div class="flex justify-between items-center">
                         <label class="text-sm font-bold text-stone-700">查询内容</label>
-                        <button
-                            onclick="document.getElementById('search-input').value=''; document.getElementById('search-input').focus();"
-                            class="text-sm text-stone-400 hover:text-amber-600 uppercase tracking-tighter transition-colors">
+                        <button id="clear-search"
+                            class="text-sm text-stone-400 hover-text-accent uppercase tracking-tighter transition-colors">
                             [清空]
                         </button>
                     </div>
                     <textarea name="q" id="search-input" rows="2"
-                        class="w-full px-4 py-3 bg-stone-50 border border-stone-200 text-sm focus:border-amber-400 focus:bg-white outline-none transition-colors resize-y min-h-[60px]"
-                        placeholder="想找什么样的图？" hx-get="/search" hx-trigger="keyup[key=='Enter']" hx-include="#topk-real"
+                        class="w-full px-4 py-3 bg-stone-50 border border-stone-200 text-sm focus-border-accent focus:bg-white outline-none transition-colors resize-y min-h-[60px]"
+                        placeholder="想找哪句台词或语义相近内容？" hx-get="/search" hx-trigger="keyup[key=='Enter']" hx-include="#topk-real"
                         hx-target="#results-grid" hx-indicator="#loading"></textarea>
+                    <div class="text-right">
+                        <span id="search-char-count" class="text-[11px] font-mono text-stone-400">0/500</span>
+                    </div>
                 </div>
 
                 <div class="flex flex-col gap-2">
                     <div class="flex justify-between items-end">
-                        <label class="text-sm font-bold text-stone-700">图片数量</label>
+                        <label class="text-sm font-bold text-stone-700">返回条数</label>
                         <span id="topk-display"
-                            class="text-[11px] font-mono font-black text-amber-600 bg-amber-50 px-2 py-0.5 border border-amber-200/50">10</span>
+                            class="text-[11px] font-mono font-black text-accent bg-accent-soft px-2 py-0.5 border border-accent-soft">25</span>
                     </div>
 
                     <div class="relative h-6 flex items-center group">
                         <div class="absolute w-full h-1 bg-stone-100 rounded-full"></div>
                         <div id="slider-progress"
-                            class="absolute h-1 bg-amber-400 rounded-full transition-all duration-200"
+                            class="absolute h-1 bg-accent rounded-full transition-all duration-200"
                             style="width: 33%;"></div>
 
                         <div class="absolute w-full flex justify-between px-0.5 pointer-events-none">
@@ -65,7 +57,7 @@
                             hx-trigger="change delay:200ms" hx-indicator="#loading">
                     </div>
 
-                    <input type="hidden" name="topK" id="topk-real" value="10">
+                    <input type="hidden" name="topK" id="topk-real" value="25">
                 </div>
 
                 <button hx-get="/search" hx-include="#search-input, #topk-real" hx-target="#results-grid"
@@ -74,26 +66,47 @@
                     检索
                 </button>
             </div>
+
+            <button id="toggle-search"
+                class="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-stone-500 hover:bg-stone-50 transition-colors border border-stone-100 rounded-md md:hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" class="lucide-chevrons-up-down">
+                    <path d="m7 15 5 5 5-5"></path>
+                    <path d="m7 9 5-5 5 5"></path>
+                </svg>
+                展开/收缩查询框
+            </button>
         </div>
 
-        <div class="mt-auto pt-8 border-t border-stone-50 flex flex-col gap-3">
-            <div class="text-[10px] text-stone-300 uppercase tracking-widest text-center">Built for Ponies</div>
+        <div id="sidebar-meta" class="mt-auto pt-8 border-t border-stone-50 flex flex-col gap-4">
+            <div class="flex items-center justify-center gap-2">
+                <a href="https://github.com/RiverMint78/pone-quest" target="_blank" rel="noopener noreferrer"
+                    class="inline-flex h-6 w-6 items-center justify-center text-stone-400 hover:text-accent transition-colors"
+                    title="GitHub Repository" aria-label="GitHub Repository">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v 3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                    </svg>
+                </a>
+            </div>
+            <div class="text-[12px] text-stone-400 text-center leading-tight">Powered by <a href="https://go.dev" target="_blank" rel="noopener noreferrer" class="font-semibold hover:underline" style="color: #00ADD8;">Go</a></div>
         </div>
 
         <div id="drag-handle"
-            class="absolute right-0 top-0 w-1.5 h-full cursor-col-resize group flex items-center justify-center z-20 hover:bg-amber-400/20 transition-colors">
-            <div class="w-[1px] h-6 bg-stone-200 group-hover:bg-amber-400"></div>
+            class="absolute right-0 top-0 w-1.5 h-full cursor-col-resize group flex items-center justify-center z-20 hover-bg-accent-soft transition-colors">
+            <div class="w-[1px] h-6 bg-stone-200 group-hover-bg-accent"></div>
         </div>
     </aside>
 
     <main class="flex-grow p-4 md:p-8 w-full overflow-hidden">
         <div id="loading" class="htmx-indicator fixed top-4 right-4 z-50">
-            <div class="h-5 w-5 bg-amber-400 animate-loading-square shadow-md"></div>
+            <div class="h-5 w-5 bg-accent animate-loading-square shadow-md"></div>
         </div>
         <div id="results-grid" class="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
             <div class="break-inside-avoid text-stone-300 text-xs tracking-widest uppercase py-10">Quest log is empty...
             </div>
         </div>
     </main>
+
+    <div id="episode-viewer"></div>
 </div>
 {{end}}

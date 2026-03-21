@@ -12,8 +12,8 @@ type Engine struct {
 
 // SearchResult 包装搜索结果
 type SearchResult struct {
-	ID    string
-	Score float64
+	LineID string
+	Score  float64
 }
 
 // NewEngine 创建并初始化引擎
@@ -28,7 +28,7 @@ func (e *Engine) Search(queryVec []float32, topK int) []SearchResult {
 	// 结果提取
 	out := make([]SearchResult, len(results))
 	for i := range results {
-		out[i].ID = results[i].Value
+		out[i].LineID = results[i].Value
 		out[i].Score = results[i].Relevance
 	}
 	// API 保证是高到低排序

@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/RiverMint78/pone-quest/internal/embed"
+	"github.com/RiverMint78/pone-quest/internal/pone"
 	"github.com/RiverMint78/pone-quest/internal/search"
 )
 
@@ -14,17 +15,20 @@ import (
 type Handler struct {
 	Engine        *search.Engine
 	Embed         *embed.Client
+	Store         *pone.TranscriptStore
 	TemplateCache map[string]*template.Template
 	Logger        *slog.Logger
 }
 
 // New 创建并初始化 Web 处理程序
-func New(engine *search.Engine, embed *embed.Client, logger *slog.Logger) (*Handler, error) {
+func New(engine *search.Engine, embed *embed.Client, store *pone.TranscriptStore, logger *slog.Logger) (*Handler, error) {
 	switch {
 	case engine == nil:
 		return nil, fmt.Errorf("missing search engine")
 	case embed == nil:
 		return nil, fmt.Errorf("missing embed client")
+	case store == nil:
+		return nil, fmt.Errorf("missing transcript store")
 	case logger == nil:
 		return nil, fmt.Errorf("missing logger")
 	}
@@ -36,6 +40,7 @@ func New(engine *search.Engine, embed *embed.Client, logger *slog.Logger) (*Hand
 	return &Handler{
 		Engine:        engine,
 		Embed:         embed,
+		Store:         store,
 		TemplateCache: cache,
 		Logger:        logger,
 	}, nil

@@ -19,6 +19,7 @@ func buildAssetHashes() {
 	entries := []string{
 		"static/css/style.css",
 		"static/js/ui.js",
+		"static/favicon.svg",
 	}
 
 	for _, name := range entries {

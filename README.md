@@ -9,8 +9,8 @@ PoneQuest 是一个 MLP 台词数据的本地语义检索工具。
 
 灵感来源：
 
-- zvv.quest（MemeMeow）：<https://github.com/MemeMeow-Studio/MemeMeow>
-- poneponepone.org> Transcript Search）：<https://github.com/ReluctusB/MLP-Fim-Episode-Transcript-Search>
+- zvv.quest (MemeMeow)：<https://github.com/MemeMeow-Studio/MemeMeow>
+- poneponepone.org (Transcript Search)：<https://github.com/ReluctusB/MLP-Fim-Episode-Transcript-Search>
 
 ## 项目目标
 
@@ -20,8 +20,8 @@ PoneQuest 是一个 MLP 台词数据的本地语义检索工具。
 
 ## 主要功能
 
-- 本地 embedding + 本地索引，不依赖云检索
-- Go 后端 + Bun 前端构建链路
+- 本地 embedding + 本地索引，无云检索，无数据库依赖
+- Go 后端 + Bun 前端构建
 - 支持台词检索、剧集详情与健康检查
 
 ## 工作流程
@@ -44,7 +44,7 @@ PoneQuest 是一个 MLP 台词数据的本地语义检索工具。
 - Go 1.26+
 - Bun 1.x
 - 可用的 GGUF embedding 模型文件
-- 你需要满足 kelindar/search 所需的运行时
+- [kelindar/search](https://github.com/kelindar/search)  所需的轻量 llama.cpp 绑定库
 
 ## 快速开始
 

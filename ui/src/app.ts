@@ -286,8 +286,9 @@ document.addEventListener("DOMContentLoaded", (): void => {
             const updateHitMarkerPosition = (): void => {
                 if (!body || !highlighted || !hitMarker) return;
                 const maxScrollable: number = Math.max(body.scrollHeight - body.clientHeight, 1);
-                const lineOffsetTop: number = highlighted.offsetTop - body.offsetTop;
-                const ratio: number = Math.min(Math.max(lineOffsetTop / maxScrollable, 0), 1);
+                const lineCenterOffset: number = (highlighted.offsetTop - body.offsetTop) + highlighted.clientHeight / 2;
+                const centeredScrollTop: number = lineCenterOffset - body.clientHeight / 2;
+                const ratio: number = Math.min(Math.max(centeredScrollTop / maxScrollable, 0), 1);
                 hitMarker.style.left = `${Math.round(ratio * 100)}%`;
             };
 

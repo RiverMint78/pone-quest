@@ -44,3 +44,6 @@ data/**/*
 
 # some scripts
 *.py
+
+# node modules
+node_modules/

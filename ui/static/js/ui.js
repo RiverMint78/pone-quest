@@ -1,6 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     const $ = id => document.getElementById(id);
     const maxQueryChars = 500;
+    const copyDebounceMs = 350;
+    const copyFlashMs = 1200;
+    const minSidebarWidth = 320;
+    const maxSidebarWidth = 600;
 
     const closeEpisodeViewer = () => {
         const viewer = $('episode-viewer');
@@ -16,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         handle.onmousedown = (e) => { isResizing = true; document.body.style.cursor = 'col-resize'; e.preventDefault(); };
         document.onmousemove = (e) => {
             if (!isResizing) return;
-            sidebar.style.width = `${Math.min(Math.max(e.clientX, 320), 600)}px`;
+            sidebar.style.width = `${Math.min(Math.max(e.clientX, minSidebarWidth), maxSidebarWidth)}px`;
         };
         document.onmouseup = () => { isResizing = false; document.body.style.cursor = ''; };
     }
@@ -24,12 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toggleBtn = $('toggle-search'), searchContent = $('search-content'), sidebarBrand = $('sidebar-brand'), sidebarMeta = $('sidebar-meta');
     let isMobileCollapsed = false;
+    const mobileSections = [searchContent, sidebarBrand, sidebarMeta];
 
     const setMobileCollapsed = (collapsed) => {
         isMobileCollapsed = collapsed;
 
-        const targets = [searchContent, sidebarBrand, sidebarMeta];
-        targets.forEach((el) => {
+        mobileSections.forEach((el) => {
             if (!el) return;
             el.classList.toggle('hidden', collapsed);
             el.style.display = collapsed ? 'none' : '';
@@ -51,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const steps = [10, 25, 50, 100];
 
     const updateSlider = (val) => {
-        const idx = parseInt(val);
+        const idx = parseInt(val, 10);
         const actualValue = steps[idx];
 
         if (realInput) realInput.value = actualValue;
@@ -111,19 +115,20 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             copyIcon.classList.remove('hidden');
             checkIcon.classList.add('hidden');
-        }, 1200);
+        }, copyFlashMs);
     };
 
     const updateSearchCounter = () => {
         if (!searchInput) return;
 
-        const chars = toChars(searchInput.value);
+        let chars = toChars(searchInput.value);
         if (chars.length > maxQueryChars) {
-            searchInput.value = chars.slice(0, maxQueryChars).join('');
+            chars = chars.slice(0, maxQueryChars);
+            searchInput.value = chars.join('');
         }
 
         if (charCount) {
-            const current = toChars(searchInput.value).length;
+            const current = chars.length;
             charCount.textContent = `${current}/${maxQueryChars}`;
             charCount.classList.toggle('text-accent', current >= maxQueryChars);
             charCount.classList.toggle('font-semibold', current >= maxQueryChars);
@@ -162,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const copyButton = e.target.closest('[data-copy-line="true"]');
         if (copyButton) {
             const now = Date.now();
-            if (now - lastCopyAt < 350) return;
+            if (now - lastCopyAt < copyDebounceMs) return;
             lastCopyAt = now;
 
             e.preventDefault();
@@ -170,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const lineText = copyButton.dataset.copyText ?? '';
             const character = copyButton.dataset.copyCharacter ?? 'Unknown';
             const seasonCode = copyButton.dataset.copySeasoncode ?? 'unknown';
-            const payload = `${lineText}\n  —— ${character}, ${seasonCode}`;
+            const payload = `${lineText}\n  -- ${character}, ${seasonCode}`;
 
             copyText(payload)
                 .then(() => flashCopySuccess(copyButton))

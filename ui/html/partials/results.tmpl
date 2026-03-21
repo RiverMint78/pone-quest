@@ -46,7 +46,7 @@
         {{end}}
         <div class="flex items-center gap-1">
             <button type="button"
-                class="shrink-0 inline-flex h-5 w-5 items-center justify-center text-stone-400 hover:text-accent transition-colors"
+                class="shrink-0 inline-flex h-5 w-5 items-center justify-center text-stone-400 hover:text-stone-700 transition-colors"
                 title="复制这段台词" aria-label="复制这段台词" data-copy-line="true" data-copy-text="{{.Text}}"
                 data-copy-character="{{if .Character}}{{.Character}}{{else}}Unknown{{end}}"
                 data-copy-seasoncode="{{if .EpisodeCode}}{{.EpisodeCode}}{{else}}{{.EpisodeTitle}}{{end}}">
@@ -61,8 +61,8 @@
                 </svg>
             </button>
             <button type="button"
-                class="shrink-0 inline-flex h-5 w-5 items-center justify-center text-stone-400 hover:text-accent transition-colors"
-                title="查看本集全文台词" aria-label="查看本集全文台词"
+                class="shrink-0 inline-flex h-5 w-5 items-center justify-center text-stone-400 hover:text-stone-700 transition-colors"
+                title="查看本集台词" aria-label="查看本集台词"
                 hx-get="/episode?episodeID={{.EpisodeID}}&lineID={{.LineID}}" hx-target="#episode-viewer"
                 hx-swap="innerHTML">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -78,7 +78,7 @@
 <div
     class="inline-block w-full py-20 text-center border border-dashed border-stone-200 break-inside-avoid bg-stone-50/50">
     <div class="mb-2 text-3xl opacity-80">∅</div>
-    <p class="text-stone-400 uppercase tracking-widest text-xs">No transcript match found</p>
+    <p class="text-stone-400 uppercase tracking-widest text-xs">No match in the void</p>
 </div>
 {{end}}
 {{end}}

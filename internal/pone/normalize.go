@@ -8,7 +8,7 @@ import (
 // NormalizeSearchText 统一规范化索引和查询文本：
 // 1) 全部转小写
 // 2) 删除特殊符号（保留 . , ? ! - 和引号）
-// 3) 各类引号统一为标准双引号 (")
+// 3) 各类引号统一为标准双引号, 保留单引号
 // 4) 合并多余空白
 func NormalizeSearchText(input string) string {
 	if input == "" {

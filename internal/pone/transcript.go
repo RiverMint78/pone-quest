@@ -1,6 +1,14 @@
 // Package pone 定义了 pone-quest 项目的核心数据结构
 package pone
 
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"sort"
+	"strings"
+)
+
 // LineItem 是原始台词单元，包含角色和台词文本。
 type LineItem struct {
 	Character string `json:"character"`
@@ -54,6 +62,99 @@ type LineRecord struct {
 type TranscriptStore struct {
 	Episodes map[int]EpisodeMeta `json:"episodes"`
 	Lines    map[int]LineRecord  `json:"lines"`
+}
+
+// LoadTranscriptStore 从原始 EpisodeItem JSON 文件构建规范化存储。
+func LoadTranscriptStore(path string) (*TranscriptStore, error) {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read transcript source: %w", err)
+	}
+
+	var episodes map[int]EpisodeItem
+	if err := json.Unmarshal(raw, &episodes); err != nil {
+		return nil, fmt.Errorf("parse transcript source: %w", err)
+	}
+
+	store := &TranscriptStore{
+		Episodes: make(map[int]EpisodeMeta, len(episodes)),
+		Lines:    make(map[int]LineRecord),
+	}
+
+	for episodeID, ep := range episodes {
+		store.Episodes[episodeID] = EpisodeMeta{
+			EpisodeID:      episodeID,
+			Title:          ep.Title,
+			NumberInSeason: ep.NumberInSeason,
+			NumberOverall:  ep.NumberOverall,
+			Writers:        ep.Writers,
+			Airdate:        ep.Airdate,
+			URL:            ep.URL,
+			TranscriptURL:  ep.TranscriptURL,
+			GalleryURL:     ep.GalleryURL,
+			Season:         ep.Season,
+			WrittenBy:      ep.WrittenBy,
+			StoryBoard:     ep.StoryBoard,
+			Synopsis:       ep.Synopsis,
+		}
+
+		for i, line := range ep.Transcript {
+			text := strings.TrimSpace(line.Line)
+			if text == "" {
+				continue
+			}
+
+			seq := i + 1
+			lineID := MakeLineID(episodeID, seq)
+			store.Lines[lineID] = LineRecord{
+				LineID:       lineID,
+				EpisodeID:    episodeID,
+				SeqInEpisode: seq,
+				Character:    line.Character,
+				Text:         text,
+			}
+		}
+	}
+
+	return store, nil
+}
+
+// GetLine 按主键查找台词记录。
+func (s *TranscriptStore) GetLine(lineID int) (LineRecord, bool) {
+	if s == nil {
+		return LineRecord{}, false
+	}
+	line, ok := s.Lines[lineID]
+	return line, ok
+}
+
+// GetEpisode 按主键查找剧集元信息。
+func (s *TranscriptStore) GetEpisode(episodeID int) (EpisodeMeta, bool) {
+	if s == nil {
+		return EpisodeMeta{}, false
+	}
+	ep, ok := s.Episodes[episodeID]
+	return ep, ok
+}
+
+// GetEpisodeLines 返回某一集所有台词，按集内顺序升序排列。
+func (s *TranscriptStore) GetEpisodeLines(episodeID int) []LineRecord {
+	if s == nil {
+		return nil
+	}
+
+	lines := make([]LineRecord, 0)
+	for _, line := range s.Lines {
+		if line.EpisodeID == episodeID {
+			lines = append(lines, line)
+		}
+	}
+
+	sort.Slice(lines, func(i, j int) bool {
+		return lines[i].SeqInEpisode < lines[j].SeqInEpisode
+	})
+
+	return lines
 }
 
 // MakeLineID 生成台词主键，eg. 230012 表示第23集的第12行。

@@ -92,7 +92,7 @@ func main() {
 	for _, episodeID := range ids {
 		ep := episodes[episodeID]
 		for i, line := range ep.Transcript {
-			text := strings.TrimSpace(line.Line)
+			text := pone.NormalizeSearchText(line.Line)
 			if text == "" {
 				continue
 			}

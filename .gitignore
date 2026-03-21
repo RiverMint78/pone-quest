@@ -47,3 +47,6 @@ data/**/*
 
 # node modules
 node_modules/
+
+# go build
+dist/

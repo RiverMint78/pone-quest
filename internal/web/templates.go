@@ -25,13 +25,16 @@ func NewTemplateCache() (map[string]*template.Template, error) {
 
 	for _, page := range pages {
 		name := filepath.Base(page)
+		funcMap := template.FuncMap{
+			"assetPath": ui.AssetPath,
+		}
 		patterns := []string{
 			"html/base.tmpl",
 			"html/partials/*.tmpl",
 			page,
 		}
 
-		ts, err := template.New(name).ParseFS(ui.Files, patterns...)
+		ts, err := template.New(name).Funcs(funcMap).ParseFS(ui.Files, patterns...)
 		if err != nil {
 			return nil, fmt.Errorf("解析模板 %s 失败: %w", name, err)
 		}

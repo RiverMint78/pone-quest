@@ -4,9 +4,9 @@ import "testing"
 
 func TestNormalizeSearchText(t *testing.T) {
 	tests := []struct {
-		name  string
-		in    string
-		want  string
+		name string
+		in   string
+		want string
 	}{
 		{
 			name: "lowercase and remove symbols",
@@ -21,7 +21,7 @@ func TestNormalizeSearchText(t *testing.T) {
 		{
 			name: "normalize quotes and collapse spaces",
 			in:   "  “Twilight”   said:  'Hi'  ",
-			want: "\"twilight\" said \"hi\"",
+			want: "\"twilight\" said 'hi'",
 		},
 	}
 

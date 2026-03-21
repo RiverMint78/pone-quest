@@ -81,7 +81,7 @@ func main() {
 	defer embClient.Close()
 
 	// local embed health check
-	testVec, err := embClient.GetVector("thumbs", true)
+	testVec, err := embClient.GetVector("很久以前，在名为 Equestria 的魔法国度，有两位皇家姐妹共同统治着这里，并为这片土地创造了和谐。为了实现这一点，年长的姐姐运用她的独角兽魔法在黎明时分升起太阳；年幼的妹妹则在入夜时分唤出月亮。就这样，两位姐妹维持着王国的平衡，守护着她们的臣民——也就是各种族的小马。", true)
 	if err != nil {
 		logger.Error("无法产生测试向量", "err", err)
 		os.Exit(1)

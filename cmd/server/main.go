@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -138,6 +139,10 @@ func main() {
 
 	logger.Info("PoneQuest 启动成功", "addr", srv.Addr)
 	if err := srv.ListenAndServe(); err != nil {
-		logger.Error("服务器关闭", "err", err)
+		if errors.Is(err, http.ErrServerClosed) {
+			logger.Info("服务器正常关闭")
+		} else {
+			logger.Error("服务器异常退出", "err", err)
+		}
 	}
 }

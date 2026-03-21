@@ -8,12 +8,30 @@ document.addEventListener("DOMContentLoaded", (): void => {
     const maxQueryChars: number = 500;
     const copyDebounceMs: number = 350;
     const copyFlashMs: number = 1200;
+    const modalGhostClickGuardMs: number = 500;
     const minSidebarWidth: number = 320;
     const maxSidebarWidth: number = 600;
     const themeStorageKey: string = "pone-theme";
 
     const themeToggleBtn: HTMLElement | null = $("theme-toggle");
     const themeToggleIcon: HTMLElement | null = $("theme-toggle-icon");
+        let bodyPrevOverflow: string = "";
+        let bodyPrevPaddingRight: string = "";
+
+        const lockBodyScroll = (): void => {
+            const scrollbarWidth: number = window.innerWidth - document.documentElement.clientWidth;
+            bodyPrevOverflow = document.body.style.overflow;
+            bodyPrevPaddingRight = document.body.style.paddingRight;
+            document.body.style.overflow = "hidden";
+            if (scrollbarWidth > 0) {
+                document.body.style.paddingRight = `${scrollbarWidth}px`;
+            }
+        };
+
+        const unlockBodyScroll = (): void => {
+            document.body.style.overflow = bodyPrevOverflow;
+            document.body.style.paddingRight = bodyPrevPaddingRight;
+        };
 
     const getPreferredTheme = (): "light" | "dark" => {
         const saved: string | null = window.localStorage.getItem(themeStorageKey);
@@ -49,7 +67,7 @@ document.addEventListener("DOMContentLoaded", (): void => {
         const viewer: HTMLElement | null = $("episode-viewer");
         if (!viewer) return;
         viewer.innerHTML = "";
-        document.body.style.overflow = "";
+           unlockBodyScroll();
     };
 
     const sidebar: HTMLElement | null = $("sidebar");
@@ -205,8 +223,14 @@ document.addEventListener("DOMContentLoaded", (): void => {
     });
 
     let lastCopyAt: number = 0;
+    let lastModalCloseAt: number = 0;
 
     const handleGlobalTap = (e: Event): void => {
+        if (e.type === "click" && Date.now() - lastModalCloseAt < modalGhostClickGuardMs) {
+            e.preventDefault();
+            return;
+        }
+
         const target: Element | null = e.target as Element | null;
         const copyButton: Element | null = target?.closest("[data-copy-line='true']") ?? null;
         if (copyButton) {
@@ -230,7 +254,11 @@ document.addEventListener("DOMContentLoaded", (): void => {
         }
 
         if (target?.closest("[data-episode-close='true']")) {
+            lastModalCloseAt = Date.now();
+            e.preventDefault();
+            e.stopPropagation();
             closeEpisodeViewer();
+            return;
         }
     };
 
@@ -241,16 +269,38 @@ document.addEventListener("DOMContentLoaded", (): void => {
         const target: HTMLElement | null = e.target as HTMLElement | null;
         if (!target || target.id !== "episode-viewer") return;
 
-        document.body.style.overflow = "hidden";
+        lockBodyScroll();
         requestAnimationFrame((): void => {
             const body: HTMLElement | null = target.querySelector(".episode-modal__body") as HTMLElement | null;
             const highlighted: HTMLElement | null = target.querySelector("#episode-highlight") as HTMLElement | null;
+            const progressBar: HTMLElement | null = target.querySelector("#episode-read-progress") as HTMLElement | null;
+            const hitMarker: HTMLElement | null = target.querySelector("#episode-hit-marker") as HTMLElement | null;
+
+            const updateEpisodeReadProgress = (): void => {
+                if (!body || !progressBar) return;
+                const maxScrollable: number = Math.max(body.scrollHeight - body.clientHeight, 0);
+                const ratio: number = maxScrollable === 0 ? 1 : Math.min(Math.max(body.scrollTop / maxScrollable, 0), 1);
+                progressBar.style.width = `${Math.round(ratio * 100)}%`;
+            };
+
+            const updateHitMarkerPosition = (): void => {
+                if (!body || !highlighted || !hitMarker) return;
+                const maxScrollable: number = Math.max(body.scrollHeight - body.clientHeight, 1);
+                const lineOffsetTop: number = highlighted.offsetTop - body.offsetTop;
+                const ratio: number = Math.min(Math.max(lineOffsetTop / maxScrollable, 0), 1);
+                hitMarker.style.left = `${Math.round(ratio * 100)}%`;
+            };
+
             if (highlighted && body) {
                 const offsetTop: number = highlighted.offsetTop - body.offsetTop;
                 const containerHeight: number = body.clientHeight;
                 const elementHeight: number = highlighted.clientHeight;
                 body.scrollTop = offsetTop - (containerHeight - elementHeight) / 2;
             }
+
+            updateHitMarkerPosition();
+            updateEpisodeReadProgress();
+            body?.addEventListener("scroll", updateEpisodeReadProgress, { passive: true });
         });
     });
 });

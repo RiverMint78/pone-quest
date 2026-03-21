@@ -1,5 +1,9 @@
 # PoneQuest
 
+![Go](https://img.shields.io/badge/Go-1.26%2B-00ADD8?logo=go&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)
+![HTMX](https://img.shields.io/badge/HTMX-2.x-3366CC?logo=htmx&logoColor=white)
+
 PoneQuest 是一个 MLP 台词数据的本地语义检索工具。
 使用本地 embedding 模型和本地向量索引完成查询，不依赖云端检索服务。
 
@@ -33,13 +37,14 @@ PoneQuest 是一个 MLP 台词数据的本地语义检索工具。
 - Bun (前端构建)
 - TypeScript + Tailwind CSS + HTMX
 - GGUF 本地 embedding 模型
-- kelindar/search 向量索引
+- [kelindar/search](https://github.com/kelindar/search) 向量索引
 
 ## 环境要求
 
 - Go 1.26+
 - Bun 1.x
 - 可用的 GGUF embedding 模型文件
+- 你需要满足 kelindar/search 所需的运行时
 
 ## 快速开始
 

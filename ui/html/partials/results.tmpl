@@ -13,23 +13,23 @@
 
 {{define "results.load-more"}}
 <div hx-get="/search?q={{.Query | urlquery}}&page={{.NextPage}}" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML"
-    hx-indicator="#loading" class="results-pager col-span-full py-2 w-full border border-dashed border-stone-200 bg-cream-bg/70 px-4 py-3 text-center">
-    <p class="text-[11px] uppercase tracking-wider text-stone-400">继续加载更多结果...</p>
+    hx-indicator="#loading" class="results-pager">
+    <p class="results-pager__text">继续加载更多结果...</p>
 </div>
 {{end}}
 
 {{define "results.item"}}
-<article class="result-card block relative bg-cream-bg border group p-4">
-    <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
-        <div class="min-w-0 flex-1">
+<article class="result-card results-item group">
+    <div class="results-head">
+        <div class="results-meta-wrap">
             {{template "results.episode-meta" .}}
         </div>
-        <div class="shrink-0 self-start ml-auto max-w-full flex items-center gap-2">
+        <div class="results-score-wrap">
             {{template "results.score-tag" .}}
         </div>
     </div>
-    <p class="text-stone-700 text-sm leading-relaxed">{{.Text}}</p>
-    <div class="flex items-center justify-between gap-2 mt-2">
+    <p class="results-text">{{.Text}}</p>
+    <div class="results-footer">
         {{template "results.character" .}}
         {{template "results.actions" .}}
     </div>
@@ -38,23 +38,23 @@
 
 {{define "results.episode-meta"}}
 {{if .EpisodeCode}}
-<p class="text-[10px] uppercase tracking-widest text-stone-400 break-all">{{.EpisodeCode}} · #{{.SeqInEpisode}}</p>
+<p class="results-episode-meta">{{.EpisodeCode}} · #{{.SeqInEpisode}}</p>
 {{else}}
-<p class="text-[10px] uppercase tracking-widest text-stone-400 break-all">{{.EpisodeTitle}} · #{{.SeqInEpisode}}</p>
+<p class="results-episode-meta">{{.EpisodeTitle}} · #{{.SeqInEpisode}}</p>
 {{end}}
 {{if .EpisodeTitle}}
-<h3 class="text-sm font-semibold text-stone-700 break-all">{{.EpisodeTitle}}</h3>
+<h3 class="results-episode-title">{{.EpisodeTitle}}</h3>
 {{end}}
 {{end}}
 
 {{define "results.score-tag"}}
-{{$scoreToneClass := "bg-cream-bg/90 text-text-main border-stone-200/50 font-medium"}}
+{{$scoreToneClass := "score-tone-base"}}
 {{if gt .Score 0.75}}
-{{$scoreToneClass = "bg-blue-50/90 text-blue-700 border-blue-200/50 font-bold"}}
+{{$scoreToneClass = "score-tone-high"}}
 {{else if gt .Score 0.60}}
-{{$scoreToneClass = "bg-emerald-50/90 text-emerald-700 border-emerald-200/50 font-bold"}}
+{{$scoreToneClass = "score-tone-mid"}}
 {{else if gt .Score 0.40}}
-{{$scoreToneClass = "bg-amber-50/90 text-amber-700 border-amber-200/50 font-bold"}}
+{{$scoreToneClass = "score-tone-low"}}
 {{end}}
 <span
     class="{{template "results.score-base-class" .}} {{$scoreToneClass}}">
@@ -62,18 +62,18 @@
 </span>
 {{end}}
 
-{{define "results.score-base-class"}}score-tag inline-flex items-center whitespace-nowrap backdrop-blur-md px-2 py-1 border shadow-sm text-xs transition-transform duration-200 leading-none{{end}}
+{{define "results.score-base-class"}}score-tag results-score{{end}}
 
 {{define "results.character"}}
 {{if .Character}}
-<p class="text-xs font-semibold {{.CharacterCSS}}">{{.Character}}</p>
+<p class="results-character {{.CharacterCSS}}">{{.Character}}</p>
 {{else}}
 <span></span>
 {{end}}
 {{end}}
 
 {{define "results.actions"}}
-<div class="flex items-center gap-1">
+<div class="results-actions">
     {{template "results.copy-button" .}}
     {{template "results.episode-button" .}}
 </div>
@@ -110,11 +110,11 @@
 </button>
 {{end}}
 
-{{define "results.action-button-class"}}shrink-0 inline-flex h-5 w-5 cursor-pointer items-center justify-center text-stone-400 hover:text-stone-700 transition-colors{{end}}
+{{define "results.action-button-class"}}results-action-btn{{end}}
 
 {{define "results.empty"}}
-<div class="col-span-full w-full py-20 text-center border border-dashed border-stone-200 bg-cream-bg/50">
-    <div class="mb-2 text-3xl opacity-80">∅</div>
-    <p class="text-stone-400 uppercase tracking-widest text-xs">No match in the void</p>
+<div class="results-empty">
+    <div class="results-empty__icon">∅</div>
+    <p class="results-empty__text">No match in the void</p>
 </div>
 {{end}}

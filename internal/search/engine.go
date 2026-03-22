@@ -14,8 +14,8 @@ type Engine struct {
 
 // SearchResult 包装搜索结果
 type SearchResult struct {
-	LineID int
-	Score  float64
+	LineID int32
+	Score  float32
 }
 
 // NewEngine 创建并初始化引擎
@@ -37,7 +37,7 @@ func (e *Engine) Search(queryVec []float32, topK int) []SearchResult {
 
 		out = append(out, SearchResult{
 			LineID: lineID,
-			Score:  results[i].Relevance,
+			Score:  float32(results[i].Relevance),
 		})
 	}
 	// API 保证是高到低排序
@@ -46,7 +46,7 @@ func (e *Engine) Search(queryVec []float32, topK int) []SearchResult {
 }
 
 // decodeLineID 从原始字节中提取 line_id 整数
-func decodeLineID(raw []byte) (int, bool) {
+func decodeLineID(raw []byte) (int32, bool) {
 	if len(raw) != 4 {
 		return 0, false
 	}
@@ -56,5 +56,5 @@ func decodeLineID(raw []byte) (int, bool) {
 		return 0, false
 	}
 
-	return int(v), true
+	return v, true
 }

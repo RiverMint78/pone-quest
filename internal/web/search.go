@@ -11,7 +11,7 @@ import (
 // SearchViewItem 是用于模板渲染的搜索结果。
 type SearchViewItem struct {
 	LineID       int
-	Score        float64
+	Score        float32
 	Character    string
 	CharacterCSS string
 	Text         string
@@ -129,7 +129,7 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	// 按 line_id 查询台词数据。
 	results := make([]SearchViewItem, 0, len(rawResults))
 	for _, hit := range rawResults {
-		line, ok := h.Store.GetLine(hit.LineID)
+		line, ok := h.Store.GetLine(int(hit.LineID))
 		if !ok {
 			h.Logger.Warn("命中结果缺少台词记录", "line_id", hit.LineID)
 			continue

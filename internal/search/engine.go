@@ -23,9 +23,13 @@ func NewEngine(idx *ksearch.Index[[]byte]) *Engine {
 	return &Engine{index: idx}
 }
 
-// Search 执行向量相似度搜索并返回前 K 个结果
-func (e *Engine) Search(queryVec []float32, topK int) []SearchResult {
-	results := e.index.Search(queryVec, topK)
+// Search 执行向量相似度搜索，返回 topK 个结果，跳过前 offset 个结果
+func (e *Engine) Search(queryVec []float32, topK int, offset int) []SearchResult {
+	results := e.index.Search(queryVec, topK+offset)
+	if offset > len(results) {
+		return nil
+	}
+	results = results[offset:]
 
 	// 结果提取
 	out := make([]SearchResult, 0, len(results))

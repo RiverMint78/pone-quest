@@ -120,7 +120,7 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 	// 索引检索
 	searchStart := time.Now()
-	rawResults := h.Engine.Search(vec, topK)
+	rawResults := h.Engine.Search(vec, topK, 0)
 	h.Logger.Debug("索引检索完成",
 		"count", len(rawResults),
 		"elapsed", time.Since(searchStart),

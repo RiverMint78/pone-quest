@@ -38,7 +38,7 @@ func BenchmarkEngine_Search(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = engine.Search(queryVec, 50)
+		_ = engine.Search(queryVec, 50, 10)
 	}
 }
 
@@ -58,12 +58,11 @@ func BenchmarkEngine_SearchTopKScaling(b *testing.B) {
 	}
 
 	for _, k := range []int{25, 50, 100, 500, 1000, n} {
-		k := k
 		b.Run("topK="+strconv.Itoa(k), func(b *testing.B) {
 			b.ReportAllocs()
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				_ = engine.Search(queryVec, k)
+				_ = engine.Search(queryVec, k, k/2)
 			}
 		})
 	}

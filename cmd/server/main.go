@@ -113,7 +113,7 @@ func main() {
 	searchEngine := search.NewEngine(idx)
 
 	// search health check
-	testRes := searchEngine.Search(testVec, 5)
+	testRes := searchEngine.Search(testVec, 5, 0)
 	logger.Debug("搜索健康检查", "count", len(testRes), "top_result", testRes)
 
 	// init handler

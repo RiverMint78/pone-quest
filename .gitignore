@@ -46,8 +46,10 @@ data/**/*
 *.py
 scripts/
 
-# node modules
+# bun frontend
 node_modules/
+ui/static/css/*
+ui/static/js/*
 
 # go build
 dist/

@@ -3,6 +3,7 @@ package search
 
 import (
 	"encoding/binary"
+	"sort"
 
 	ksearch "github.com/kelindar/search"
 )
@@ -44,7 +45,14 @@ func (e *Engine) Search(queryVec []float32, topK int, offset int) []SearchResult
 			Score:  float32(results[i].Relevance),
 		})
 	}
-	// API 保证是高到低排序
+
+	// 二级排序：相似度 和 LineID
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].Score == out[j].Score {
+			return out[i].LineID < out[j].LineID
+		}
+		return out[i].Score > out[j].Score
+	})
 
 	return out
 }

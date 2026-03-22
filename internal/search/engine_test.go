@@ -1,6 +1,7 @@
 package search
 
 import (
+	"encoding/binary"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -8,15 +9,18 @@ import (
 	ksearch "github.com/kelindar/search"
 )
 
-func setupTestIndex(size, dim int, seed int64) *ksearch.Index[string] {
+func setupTestIndex(size, dim int, seed int64) *ksearch.Index[[]byte] {
 	rng := rand.New(rand.NewSource(seed))
-	idx := ksearch.NewIndex[string]()
+	idx := ksearch.NewIndex[[]byte]()
 	for i := 0; i < size; i++ {
 		vec := make([]float32, dim)
 		for j := range vec {
 			vec[j] = rng.Float32()
 		}
-		idx.Add(vec, "test_id")
+		lineID := i + 1
+		payload := make([]byte, 4)
+		binary.LittleEndian.PutUint32(payload, uint32(int32(lineID)))
+		idx.Add(vec, payload)
 	}
 	return idx
 }

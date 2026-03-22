@@ -102,7 +102,7 @@ func main() {
 		logger.Error("missing PQ_INDEX_FILE")
 		os.Exit(1)
 	}
-	idx := ksearch.NewIndex[string]()
+	idx := ksearch.NewIndex[[]byte]()
 	if err := idx.ReadFile(indexPath); err != nil {
 		logger.Error("索引加载失败", "err", err)
 		os.Exit(1)

@@ -2,22 +2,24 @@
 package search
 
 import (
+	"encoding/binary"
+
 	ksearch "github.com/kelindar/search"
 )
 
 // Engine 包装泛型向量搜索索引
 type Engine struct {
-	index *ksearch.Index[string]
+	index *ksearch.Index[[]byte]
 }
 
 // SearchResult 包装搜索结果
 type SearchResult struct {
-	LineID string
+	LineID int
 	Score  float64
 }
 
 // NewEngine 创建并初始化引擎
-func NewEngine(idx *ksearch.Index[string]) *Engine {
+func NewEngine(idx *ksearch.Index[[]byte]) *Engine {
 	return &Engine{index: idx}
 }
 
@@ -26,12 +28,33 @@ func (e *Engine) Search(queryVec []float32, topK int) []SearchResult {
 	results := e.index.Search(queryVec, topK)
 
 	// 结果提取
-	out := make([]SearchResult, len(results))
+	out := make([]SearchResult, 0, len(results))
 	for i := range results {
-		out[i].LineID = results[i].Value
-		out[i].Score = results[i].Relevance
+		lineID, ok := decodeLineID(results[i].Value)
+		if !ok {
+			continue
+		}
+
+		out = append(out, SearchResult{
+			LineID: lineID,
+			Score:  results[i].Relevance,
+		})
 	}
 	// API 保证是高到低排序
 
 	return out
+}
+
+// decodeLineID 从原始字节中提取 line_id 整数
+func decodeLineID(raw []byte) (int, bool) {
+	if len(raw) != 4 {
+		return 0, false
+	}
+
+	v := int32(binary.LittleEndian.Uint32(raw))
+	if v < 0 {
+		return 0, false
+	}
+
+	return int(v), true
 }

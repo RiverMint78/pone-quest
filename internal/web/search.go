@@ -129,15 +129,9 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	// 按 line_id 查询台词数据。
 	results := make([]SearchViewItem, 0, len(rawResults))
 	for _, hit := range rawResults {
-		lineID, err := strconv.Atoi(hit.LineID)
-		if err != nil {
-			h.Logger.Warn("命中结果 line_id 非法", "line_id", hit.LineID, "err", err)
-			continue
-		}
-
-		line, ok := h.Store.GetLine(lineID)
+		line, ok := h.Store.GetLine(hit.LineID)
 		if !ok {
-			h.Logger.Warn("命中结果缺少台词记录", "line_id", lineID)
+			h.Logger.Warn("命中结果缺少台词记录", "line_id", hit.LineID)
 			continue
 		}
 

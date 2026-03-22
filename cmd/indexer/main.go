@@ -1,12 +1,12 @@
 package main
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/RiverMint78/pone-quest/internal/embed"
@@ -70,7 +70,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	idx := ksearch.NewIndex[string]()
+	idx := ksearch.NewIndex[[]byte]()
 
 	ids := make([]int, 0, len(episodes))
 	for id := range episodes {
@@ -108,7 +108,9 @@ func main() {
 				continue
 			}
 
-			idx.Add(vec, strconv.Itoa(lineID))
+			buf := make([]byte, 4)
+			binary.LittleEndian.PutUint32(buf, uint32(int32(lineID)))
+			idx.Add(vec, buf)
 		}
 	}
 

@@ -46,7 +46,7 @@
 <div id="search-content" class="space-y-6">
     <div class="space-y-2">
         <div class="flex justify-between items-center">
-            <label class="text-sm font-bold text-stone-700">检索内容</label>
+            <label class="text-sm font-bold text-stone-700">语义检索</label>
             <button id="clear-search"
                 class="text-sm text-stone-400 hover:text-brand-accent uppercase tracking-tighter transition-colors">
                 [清空]
@@ -54,9 +54,10 @@
         </div>
         <textarea name="q" id="search-input" rows="2"
             class="w-full px-4 py-3 bg-stone-50 border border-stone-200 text-sm focus:border-brand-accent focus:bg-white outline-none transition-colors resize-y min-h-[60px] text-text-main"
-            placeholder="想找哪句台词或语义相近内容？" hx-get="{{$searchEndpoint}}" hx-trigger="keyup[key=='Enter']" hx-vals='{"page":0}'
+            placeholder="Manehattan 如此辉煌的原因……" hx-get="{{$searchEndpoint}}" hx-trigger="keyup[key=='Enter']" hx-vals='{"page":0}'
             hx-target="{{$resultsTarget}}" hx-indicator="{{$loadingIndicator}}"></textarea>
-        <div class="text-right">
+        <div class="flex items-center justify-between gap-2">
+            <span class="text-[11px] text-stone-400">输入中/英自然语言描述（英文专有名词）</span>
             <span id="search-char-count" class="text-[11px] font-mono text-stone-400">0/500</span>
         </div>
     </div>

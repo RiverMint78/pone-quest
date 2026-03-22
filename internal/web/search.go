@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/RiverMint78/pone-quest/internal/pone"
 )
 
 const (
@@ -143,12 +145,14 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 		runeCount++
 	}
 
+	query = pone.NormalizeSearchText(query)
+
 	// 本地向量化
 	embedStart := time.Now()
 	vec, err := h.Embed.GetVector(query, true)
 	if err != nil {
 		h.Logger.Error("向量化失败",
-			"query", query,
+			"query_normed", query,
 			"err", err,
 			"elapsed", time.Since(embedStart),
 		)

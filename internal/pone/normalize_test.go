@@ -9,19 +9,24 @@ func TestNormalizeSearchText(t *testing.T) {
 		want string
 	}{
 		{
-			name: "lowercase and remove symbols",
+			name: "preserve case and symbols",
 			in:   "Hello@World #42!",
-			want: "helloworld 42!",
+			want: "Hello@World #42!",
 		},
 		{
-			name: "keep allowed punctuation",
+			name: "keep punctuation as-is",
 			in:   "A.B, C? D! E-F",
-			want: "a.b, c? d! e-f",
+			want: "A.B, C? D! E-F",
 		},
 		{
 			name: "normalize quotes and collapse spaces",
 			in:   "  “Twilight”   said:  'Hi'  ",
-			want: "\"twilight\" said 'hi'",
+			want: "\"Twilight\" said: 'Hi'",
+		},
+		{
+			name: "convert fullwidth to halfwidth",
+			in:   "Ｈｅｌｌｏ，　ｗｏｒｌｄ！ １２３",
+			want: "Hello, world! 123",
 		},
 	}
 

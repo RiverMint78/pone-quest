@@ -6,10 +6,9 @@ import (
 )
 
 // NormalizeSearchText 统一规范化索引和查询文本：
-// 1) 全部转小写
-// 2) 删除特殊符号（保留 . , ? ! - 和引号）
-// 3) 各类引号统一为标准双引号, 保留单引号
-// 4) 合并多余空白
+// 1) 全角转半角
+// 2) 引号统一
+// 3) 合并多余空白
 func NormalizeSearchText(input string) string {
 	if input == "" {
 		return ""
@@ -19,6 +18,7 @@ func NormalizeSearchText(input string) string {
 	b.Grow(len(input))
 
 	for _, r := range input {
+		r = normalizeWidthRune(r)
 		r = normalizeQuoteRune(r)
 
 		switch {
@@ -26,13 +26,26 @@ func NormalizeSearchText(input string) string {
 			b.WriteRune(r)
 		case unicode.IsSpace(r):
 			b.WriteByte(' ')
-		case r == '.', r == ',', r == '?', r == '!', r == '-', r == '"', r == '\'':
+		default:
 			b.WriteRune(r)
 		}
 	}
 
-	out := strings.ToLower(b.String())
-	return strings.Join(strings.Fields(out), " ")
+	return strings.Join(strings.Fields(b.String()), " ")
+}
+
+func normalizeWidthRune(r rune) rune {
+	// 全角空格
+	if r == '\u3000' {
+		return ' '
+	}
+
+	// U+FF01('！') ~ U+FF5E('～')
+	if r >= '\uFF01' && r <= '\uFF5E' {
+		return r - 0xFEE0
+	}
+
+	return r
 }
 
 func normalizeQuoteRune(r rune) rune {

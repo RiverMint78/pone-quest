@@ -34,9 +34,7 @@
 <div class="w-full border-b border-stone-100" aria-hidden="true">
     <div class="relative h-0.5 w-full bg-stone-100">
         <div id="episode-read-progress" class="h-full bg-brand-accent transition-[width] duration-150 ease-out" style="width: 0%;"></div>
-        <div id="episode-hit-marker"
-            class="absolute top-1/2 left-0 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-accent border border-cream-bg pointer-events-none"
-            style="left: 0%;"></div>
+        <div id="episode-hit-markers" class="absolute inset-0 pointer-events-none"></div>
     </div>
 </div>
 {{end}}
@@ -53,7 +51,7 @@
 <article class="episode-line border border-transparent px-3 py-2 mb-2 bg-cream-bg {{if .Highlighted}}episode-line--highlight{{end}}"
     {{if .Highlighted}}id="episode-highlight"{{end}}>
     <p class="text-[11px] text-stone-400 mb-1">#{{.SeqInEpisode}}</p>
-    <p class="text-base text-stone-700 leading-snug {{if .Highlighted}}font-semibold{{end}}">{{.Text}}</p>
+    <p class="episode-line__text text-base text-stone-700 leading-snug">{{.Text}}</p>
     {{if .Character}}
     <p class="mt-1 text-xs font-semibold {{.CharacterCSS}}">{{.Character}}</p>
     {{end}}

@@ -202,6 +202,32 @@ document.addEventListener("DOMContentLoaded", (): void => {
 
     let lastCopyAt: number = 0;
     let lastModalCloseAt: number = 0;
+    const pinnedCardClass: string = "result-card--pinned";
+    const episodeLineHighlightClass: string = "episode-line--highlight";
+
+    const syncEpisodeHitMarkers = (episodeBody: HTMLElement): void => {
+        const viewer: HTMLElement | null = $("episode-viewer");
+        if (!viewer) return;
+
+        const hitMarkers: HTMLElement | null = viewer.querySelector("#episode-hit-markers") as HTMLElement | null;
+        if (!hitMarkers) return;
+
+        hitMarkers.innerHTML = "";
+        const highlightedLines: NodeListOf<HTMLElement> = episodeBody.querySelectorAll(".episode-line.episode-line--highlight");
+
+        const maxScrollable: number = Math.max(episodeBody.scrollHeight - episodeBody.clientHeight, 1);
+
+        highlightedLines.forEach((line): void => {
+            const lineCenterOffset: number = (line.offsetTop - episodeBody.offsetTop) + line.clientHeight / 2;
+            const centeredScrollTop: number = lineCenterOffset - episodeBody.clientHeight / 2;
+            const ratio: number = Math.min(Math.max(centeredScrollTop / maxScrollable, 0), 1);
+
+            const marker: HTMLDivElement = document.createElement("div");
+            marker.className = "absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-accent border border-cream-bg";
+            marker.style.left = `${Math.round(ratio * 100)}%`;
+            hitMarkers.appendChild(marker);
+        });
+    };
 
     const handleGlobalTap = (e: Event): void => {
         if (e.type === "click" && Date.now() - lastModalCloseAt < modalGhostClickGuardMs) {
@@ -238,6 +264,33 @@ document.addEventListener("DOMContentLoaded", (): void => {
             closeEpisodeViewer();
             return;
         }
+
+        if (e.type !== "click") {
+            return;
+        }
+
+        const episodeLine: HTMLElement | null = target?.closest(".episode-line") as HTMLElement | null;
+        if (episodeLine) {
+            episodeLine.classList.toggle(episodeLineHighlightClass);
+
+            const episodeBody: HTMLElement | null = episodeLine.closest(".episode-modal__body") as HTMLElement | null;
+            if (episodeBody) {
+                syncEpisodeHitMarkers(episodeBody);
+            }
+            return;
+        }
+
+        const card: HTMLElement | null = target?.closest(".result-card") as HTMLElement | null;
+        if (!card) {
+            return;
+        }
+
+        const interactiveHit: Element | null = target?.closest("button, a, input, textarea, select, label, [role='button']") ?? null;
+        if (interactiveHit) {
+            return;
+        }
+
+        card.classList.toggle(pinnedCardClass);
     };
 
     document.addEventListener("click", handleGlobalTap);
@@ -252,22 +305,12 @@ document.addEventListener("DOMContentLoaded", (): void => {
             const body: HTMLElement | null = target.querySelector(".episode-modal__body") as HTMLElement | null;
             const highlighted: HTMLElement | null = target.querySelector("#episode-highlight") as HTMLElement | null;
             const progressBar: HTMLElement | null = target.querySelector("#episode-read-progress") as HTMLElement | null;
-            const hitMarker: HTMLElement | null = target.querySelector("#episode-hit-marker") as HTMLElement | null;
 
             const updateEpisodeReadProgress = (): void => {
                 if (!body || !progressBar) return;
                 const maxScrollable: number = Math.max(body.scrollHeight - body.clientHeight, 0);
                 const ratio: number = maxScrollable === 0 ? 1 : Math.min(Math.max(body.scrollTop / maxScrollable, 0), 1);
                 progressBar.style.width = `${Math.round(ratio * 100)}%`;
-            };
-
-            const updateHitMarkerPosition = (): void => {
-                if (!body || !highlighted || !hitMarker) return;
-                const maxScrollable: number = Math.max(body.scrollHeight - body.clientHeight, 1);
-                const lineCenterOffset: number = (highlighted.offsetTop - body.offsetTop) + highlighted.clientHeight / 2;
-                const centeredScrollTop: number = lineCenterOffset - body.clientHeight / 2;
-                const ratio: number = Math.min(Math.max(centeredScrollTop / maxScrollable, 0), 1);
-                hitMarker.style.left = `${Math.round(ratio * 100)}%`;
             };
 
             if (highlighted && body) {
@@ -277,7 +320,9 @@ document.addEventListener("DOMContentLoaded", (): void => {
                 body.scrollTop = offsetTop - (containerHeight - elementHeight) / 2;
             }
 
-            updateHitMarkerPosition();
+            if (body) {
+                syncEpisodeHitMarkers(body);
+            }
             updateEpisodeReadProgress();
             body?.addEventListener("scroll", updateEpisodeReadProgress, { passive: true });
         });

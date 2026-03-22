@@ -8,6 +8,45 @@ import (
 	"time"
 )
 
+const (
+	pageBaseSize = 100
+	pageMaxSize  = 400
+)
+
+// SearchResultsView 是用于结果局部渲染的分页视图模型。
+type SearchResultsView struct {
+	Items    []SearchViewItem
+	Query    string
+	NextPage int
+	HasMore  bool
+}
+
+func pageLimit(page int) int {
+	if page < 0 {
+		page = 0
+	}
+
+	limit := pageBaseSize << page
+	if limit > pageMaxSize {
+		return pageMaxSize
+	}
+
+	return limit
+}
+
+func pageOffset(page int) int {
+	if page <= 0 {
+		return 0
+	}
+
+	offset := 0
+	for i := 0; i < page; i++ {
+		offset += pageLimit(i)
+	}
+
+	return offset
+}
+
 // SearchViewItem 是用于模板渲染的搜索结果。
 type SearchViewItem struct {
 	LineID       int
@@ -68,25 +107,25 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 	rawQuery := strings.TrimSpace(r.URL.Query().Get("q"))
 
-	// 解析topK
-	topKStr := r.URL.Query().Get("topK")
-	topK := 25
-	if parsed, err := strconv.Atoi(topKStr); err == nil {
-		switch parsed {
-		case 10, 25, 50, 100:
-			topK = parsed
-		}
+	page := 0
+	if parsed, err := strconv.Atoi(r.URL.Query().Get("page")); err == nil && parsed >= 0 {
+		page = parsed
 	}
+
+	limit := pageLimit(page)
+	offset := pageOffset(page)
 
 	h.Logger.Debug("收到搜索请求",
 		"query", rawQuery,
-		"topK", topK,
+		"page", page,
+		"limit", limit,
+		"offset", offset,
 		"is_htmx", isHTMX,
 		"UA", r.UserAgent(),
 	)
 
 	if rawQuery == "" {
-		h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, nil)
+		h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, SearchResultsView{})
 		return
 	}
 
@@ -120,9 +159,10 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 	// 索引检索
 	searchStart := time.Now()
-	rawResults := h.Engine.Search(vec, topK, 0)
+	rawResults := h.Engine.Search(vec, limit, offset)
 	h.Logger.Debug("索引检索完成",
 		"count", len(rawResults),
+		"page", page,
 		"elapsed", time.Since(searchStart),
 	)
 
@@ -154,12 +194,21 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	view := SearchResultsView{
+		Items:    results,
+		Query:    query,
+		NextPage: page + 1,
+		HasMore:  len(rawResults) == limit,
+	}
+
 	// 渲染结果
 	h.Logger.Debug("完成搜索和渲染",
 		"target", targetTemplate,
 		"is_htmx", isHTMX,
+		"has_more", view.HasMore,
+		"next_page", view.NextPage,
 		"total_latency", time.Since(start),
 	)
 
-	h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, results)
+	h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, view)
 }

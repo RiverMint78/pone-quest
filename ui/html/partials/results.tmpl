@@ -1,15 +1,25 @@
 {{define "results.tmpl"}}
-{{if .}}
-{{range .}}
+{{if .Items}}
+{{range .Items}}
 {{template "results.item" .}}
 {{end}}
 {{else}}
 {{template "results.empty" .}}
 {{end}}
+{{if .HasMore}}
+{{template "results.load-more" .}}
+{{end}}
+{{end}}
+
+{{define "results.load-more"}}
+<div hx-get="/search?q={{.Query | urlquery}}&page={{.NextPage}}" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML"
+    hx-indicator="#loading" class="results-pager col-span-full py-2 w-full border border-dashed border-stone-200 bg-cream-bg/70 px-4 py-3 text-center">
+    <p class="text-[11px] uppercase tracking-wider text-stone-400">继续加载更多结果...</p>
+</div>
 {{end}}
 
 {{define "results.item"}}
-<article class="result-card block relative break-inside-avoid bg-cream-bg border border-stone-100 group mb-6 p-4">
+<article class="result-card block relative bg-cream-bg border group p-4">
     <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
         <div class="min-w-0 flex-1">
             {{template "results.episode-meta" .}}
@@ -100,10 +110,10 @@
 </button>
 {{end}}
 
-{{define "results.action-button-class"}}shrink-0 inline-flex h-5 w-5 items-center justify-center text-stone-400 hover:text-stone-700 transition-colors{{end}}
+{{define "results.action-button-class"}}shrink-0 inline-flex h-5 w-5 cursor-pointer items-center justify-center text-stone-400 hover:text-stone-700 transition-colors{{end}}
 
 {{define "results.empty"}}
-<div class="inline-block w-full py-20 text-center border border-dashed border-stone-200 break-inside-avoid bg-cream-bg/50">
+<div class="col-span-full w-full py-20 text-center border border-dashed border-stone-200 bg-cream-bg/50">
     <div class="mb-2 text-3xl opacity-80">∅</div>
     <p class="text-stone-400 uppercase tracking-widest text-xs">No match in the void</p>
 </div>

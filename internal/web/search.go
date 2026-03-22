@@ -12,7 +12,7 @@ import (
 
 const (
 	pageBaseSize = 100
-	pageMaxSize  = 400
+	pageMaxParam = 999
 )
 
 // SearchResultsView 是用于结果局部渲染的分页视图模型。
@@ -21,32 +21,19 @@ type SearchResultsView struct {
 	Query    string
 	NextPage int
 	HasMore  bool
-}
-
-func pageLimit(page int) int {
-	if page < 0 {
-		page = 0
-	}
-
-	limit := pageBaseSize << page
-	if limit > pageMaxSize {
-		return pageMaxSize
-	}
-
-	return limit
+	Error    string
 }
 
 func pageOffset(page int) int {
-	if page <= 0 {
+	return max(page*pageBaseSize, 0)
+}
+
+func normalizePage(raw string) int {
+	parsed, err := strconv.Atoi(raw)
+	if err != nil || parsed <= 0 {
 		return 0
 	}
-
-	offset := 0
-	for i := 0; i < page; i++ {
-		offset += pageLimit(i)
-	}
-
-	return offset
+	return min(parsed, pageMaxParam)
 }
 
 // SearchViewItem 是用于模板渲染的搜索结果。
@@ -95,7 +82,7 @@ func episodeIDToSxxEyy(episodeID int) string {
 }
 
 func (h *Handler) handleIndex(w http.ResponseWriter, r *http.Request) {
-	h.render(w, r, http.StatusOK, "index.tmpl", "base.tmpl", nil)
+	h.render(w, r, http.StatusOK, "index.tmpl", "base.tmpl", SearchResultsView{})
 }
 
 func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
@@ -109,25 +96,20 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 	rawQuery := strings.TrimSpace(r.URL.Query().Get("q"))
 
-	page := 0
-	if parsed, err := strconv.Atoi(r.URL.Query().Get("page")); err == nil && parsed >= 0 {
-		page = parsed
-	}
-
-	limit := pageLimit(page)
+	page := normalizePage(r.URL.Query().Get("page"))
 	offset := pageOffset(page)
 
 	h.Logger.Debug("收到搜索请求",
 		"query", rawQuery,
 		"page", page,
-		"limit", limit,
+		"limit", pageBaseSize,
 		"offset", offset,
 		"is_htmx", isHTMX,
 		"UA", r.UserAgent(),
 	)
 
 	if rawQuery == "" {
-		h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, SearchResultsView{})
+		h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, SearchResultsView{Query: ""})
 		return
 	}
 
@@ -156,14 +138,17 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 			"err", err,
 			"elapsed", time.Since(embedStart),
 		)
-		http.Error(w, "搜索暂时不可用", http.StatusInternalServerError)
+		h.render(w, r, http.StatusOK, "index.tmpl", targetTemplate, SearchResultsView{
+			Query: query,
+			Error: "搜索服务暂时不可用，请稍后重试。",
+		})
 		return
 	}
 	h.Logger.Debug("向量化成功", "elapsed", time.Since(embedStart))
 
 	// 索引检索
 	searchStart := time.Now()
-	rawResults := h.Engine.Search(vec, limit, offset)
+	rawResults := h.Engine.Search(vec, pageBaseSize, offset)
 	h.Logger.Debug("索引检索完成",
 		"count", len(rawResults),
 		"page", page,
@@ -202,7 +187,7 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 		Items:    results,
 		Query:    query,
 		NextPage: page + 1,
-		HasMore:  len(rawResults) == limit,
+		HasMore:  len(rawResults) == pageBaseSize,
 	}
 
 	// 渲染结果

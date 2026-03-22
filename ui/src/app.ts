@@ -136,33 +136,11 @@ document.addEventListener("DOMContentLoaded", (): void => {
 
     const toChars = (text: string | null | undefined): string[] => Array.from(text ?? "");
 
-    const fallbackCopyText = (text: string): void => {
-        const temp: HTMLTextAreaElement = document.createElement("textarea");
-        temp.value = text;
-        temp.style.position = "fixed";
-        temp.style.top = "0";
-        temp.style.left = "-9999px";
-        temp.style.opacity = "0";
-        document.body.appendChild(temp);
-        temp.focus();
-        temp.select();
-        temp.setSelectionRange(0, temp.value.length);
-
-        const ok: boolean = document.execCommand("copy");
-        document.body.removeChild(temp);
-        if (!ok) throw new Error("copy failed");
-    };
-
     const copyText = async (text: string): Promise<void> => {
-        if (navigator.clipboard?.writeText) {
-            try {
-                await navigator.clipboard.writeText(text);
-                return;
-            } catch {
-                // Fallback for environments where clipboard API is blocked.
-            }
+        if (!navigator.clipboard?.writeText) {
+            throw new Error("clipboard unavailable");
         }
-        fallbackCopyText(text);
+        await navigator.clipboard.writeText(text);
     };
 
     const flashCopySuccess = (button: Element): void => {
@@ -248,7 +226,7 @@ document.addEventListener("DOMContentLoaded", (): void => {
             copyText(payload)
                 .then((): void => flashCopySuccess(copyButton))
                 .catch((): void => {
-                    window.prompt("复制失败，请手动复制以下内容：", payload);
+                    // Ignore copy failure silently.
                 });
             return;
         }

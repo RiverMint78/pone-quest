@@ -3,6 +3,7 @@ package search
 
 import (
 	"encoding/binary"
+	"math"
 	"sort"
 
 	ksearch "github.com/kelindar/search"
@@ -48,13 +49,19 @@ func (e *Engine) Search(queryVec []float32, topK int, offset int) []SearchResult
 
 	// 二级排序：相似度 和 LineID
 	sort.SliceStable(out, func(i, j int) bool {
-		if out[i].Score == out[j].Score {
+		si := score4(out[i].Score)
+		sj := score4(out[j].Score)
+		if si == sj {
 			return out[i].LineID < out[j].LineID
 		}
-		return out[i].Score > out[j].Score
+		return si > sj
 	})
 
 	return out
+}
+
+func score4(v float32) int32 {
+	return int32(math.Round(float64(v) * 10000))
 }
 
 // decodeLineID 从原始字节中提取 line_id 整数

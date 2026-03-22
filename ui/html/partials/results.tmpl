@@ -1,12 +1,14 @@
 {{define "results.tmpl"}}
-{{if .Items}}
+{{if .Error}}
+{{template "results.error" .}}
+{{else if .Items}}
 {{range .Items}}
 {{template "results.item" .}}
 {{end}}
 {{else}}
 {{template "results.empty" .}}
 {{end}}
-{{if .HasMore}}
+{{if and (not .Error) .HasMore}}
 {{template "results.load-more" .}}
 {{end}}
 {{end}}
@@ -115,6 +117,17 @@
 {{define "results.empty"}}
 <div class="results-empty">
     <div class="results-empty__icon">∅</div>
+    {{if .Query}}
     <p class="results-empty__text">No match in the void</p>
+    {{else}}
+    <p class="results-empty__text">Quest log is empty...</p>
+    {{end}}
+</div>
+{{end}}
+
+{{define "results.error"}}
+<div class="results-empty">
+    <div class="results-empty__icon">!</div>
+    <p class="results-empty__text">{{.Error}}</p>
 </div>
 {{end}}

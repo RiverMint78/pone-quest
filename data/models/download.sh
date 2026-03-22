@@ -1,7 +1,7 @@
 #!/bin/bash
 
-MODEL_URL="https://huggingface.co/turingevo/bge-base-zh-v1.5-Q4_K_M-GGUF/resolve/main/bge-base-zh-v1.5-q4_k_m.gguf"
-MODEL_NAME="bge-base-zh-v1.5-q4_k_m.gguf"
+MODEL_URL="https://huggingface.co/keisuke-miyako/bce-embedding-base_v1-gguf-q4_k_m/resolve/main/bce-embedding-base_v1-Q4_k_m.gguf"
+MODEL_NAME="bce-embedding-base_v1-Q4_k_m.gguf"
 
 if [ -f "$MODEL_NAME" ]; then
     echo "Model '$MODEL_NAME' already exists. Skipping download."

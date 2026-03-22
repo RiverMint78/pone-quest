@@ -6,7 +6,7 @@ interface SearchPanelController {
     clearSearchInput: () => void;
 }
 
-export function initSearchPanel(options: SearchPanelOptions): SearchPanelController {
+export function initSearchPanel(options: SearchPanelOptions = { maxQueryChars: 500 }): SearchPanelController {
     const searchInput: HTMLTextAreaElement | null = document.getElementById("search-input") as HTMLTextAreaElement | null;
     const clearSearch: HTMLElement | null = document.getElementById("clear-search");
     const charCount: HTMLElement | null = document.getElementById("search-char-count");

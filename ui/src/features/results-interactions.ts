@@ -4,7 +4,11 @@ interface ResultsInteractionOptions {
     pinnedCardClass: string;
 }
 
-export function initResultsInteractions(options: ResultsInteractionOptions): void {
+export function initResultsInteractions(options: ResultsInteractionOptions = {
+    copyDebounceMs: 350,
+    copyFlashMs: 1200,
+    pinnedCardClass: "result-card--pinned",
+}): void {
     const resultsGrid: HTMLElement | null = document.getElementById("results-grid");
     if (!resultsGrid) return;
 

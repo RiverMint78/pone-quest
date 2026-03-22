@@ -2,7 +2,7 @@ interface EpisodeViewerOptions {
     episodeLineHighlightClass: string;
 }
 
-export function initEpisodeViewer(options: EpisodeViewerOptions): void {
+export function initEpisodeViewer(options: EpisodeViewerOptions = { episodeLineHighlightClass: "episode-line--highlight" }): void {
     const episodeViewer: HTMLElement | null = document.getElementById("episode-viewer");
     let bodyPrevOverflow: string = "";
     let bodyPrevPaddingRight: string = "";
@@ -83,11 +83,16 @@ export function initEpisodeViewer(options: EpisodeViewerOptions): void {
         const target: HTMLElement | null = e.target as HTMLElement | null;
         if (!target || target.id !== "episode-viewer") return;
 
+        const body: HTMLElement | null = target.querySelector(".episode-modal__body") as HTMLElement | null;
+        if (!body) {
+            unlockBodyScroll();
+            return;
+        }
+
         lockBodyScroll();
         target.setAttribute("tabindex", "-1");
         target.focus({ preventScroll: true });
         requestAnimationFrame((): void => {
-            const body: HTMLElement | null = target.querySelector(".episode-modal__body") as HTMLElement | null;
             const highlighted: HTMLElement | null = target.querySelector("#episode-highlight") as HTMLElement | null;
             const progressBar: HTMLElement | null = target.querySelector("#episode-read-progress") as HTMLElement | null;
 

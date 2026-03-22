@@ -3,7 +3,7 @@ interface SidebarOptions {
     maxSidebarWidth: number;
 }
 
-export function initSidebar(options: SidebarOptions): void {
+export function initSidebar(options: SidebarOptions = { minSidebarWidth: 320, maxSidebarWidth: 600 }): void {
     const sidebar: HTMLElement | null = document.getElementById("sidebar");
     const handle: HTMLElement | null = document.getElementById("drag-handle");
 

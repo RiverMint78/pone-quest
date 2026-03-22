@@ -1,4 +1,4 @@
-export function initTheme(root: HTMLElement, themeStorageKey = "pone-theme"): void {
+export function initTheme(root: HTMLElement = document.documentElement, themeStorageKey = "pone-theme"): void {
     const themeToggleBtn: HTMLElement | null = document.getElementById("theme-toggle");
     const themeToggleIcon: HTMLElement | null = document.getElementById("theme-toggle-icon");
 

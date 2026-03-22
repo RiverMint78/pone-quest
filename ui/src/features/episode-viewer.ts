@@ -2,12 +2,7 @@ interface EpisodeViewerOptions {
     episodeLineHighlightClass: string;
 }
 
-interface EpisodeViewerController {
-    closeEpisodeViewer: () => void;
-    hasOpenViewer: () => boolean;
-}
-
-export function initEpisodeViewer(options: EpisodeViewerOptions): EpisodeViewerController {
+export function initEpisodeViewer(options: EpisodeViewerOptions): void {
     const episodeViewer: HTMLElement | null = document.getElementById("episode-viewer");
     let bodyPrevOverflow: string = "";
     let bodyPrevPaddingRight: string = "";
@@ -31,10 +26,6 @@ export function initEpisodeViewer(options: EpisodeViewerOptions): EpisodeViewerC
         if (!episodeViewer) return;
         episodeViewer.innerHTML = "";
         unlockBodyScroll();
-    };
-
-    const hasOpenViewer = (): boolean => {
-        return (episodeViewer?.children.length ?? 0) > 0;
     };
 
     const syncEpisodeHitMarkers = (episodeBody: HTMLElement): void => {
@@ -79,13 +70,22 @@ export function initEpisodeViewer(options: EpisodeViewerOptions): EpisodeViewerC
                 syncEpisodeHitMarkers(episodeBody);
             }
         });
+
+        episodeViewer.addEventListener("keydown", (e: KeyboardEvent): void => {
+            if (e.key !== "Escape") return;
+            if (episodeViewer.children.length === 0) return;
+            e.preventDefault();
+            closeEpisodeViewer();
+        });
     }
 
-    document.body.addEventListener("htmx:afterSwap", (e: Event): void => {
+    episodeViewer?.addEventListener("htmx:afterSwap", (e: Event): void => {
         const target: HTMLElement | null = e.target as HTMLElement | null;
         if (!target || target.id !== "episode-viewer") return;
 
         lockBodyScroll();
+        target.setAttribute("tabindex", "-1");
+        target.focus({ preventScroll: true });
         requestAnimationFrame((): void => {
             const body: HTMLElement | null = target.querySelector(".episode-modal__body") as HTMLElement | null;
             const highlighted: HTMLElement | null = target.querySelector("#episode-highlight") as HTMLElement | null;
@@ -113,8 +113,5 @@ export function initEpisodeViewer(options: EpisodeViewerOptions): EpisodeViewerC
         });
     });
 
-    return {
-        closeEpisodeViewer,
-        hasOpenViewer,
-    };
+    return;
 }

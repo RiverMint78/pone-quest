@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", (): void => {
         maxSidebarWidth: 600,
     });
 
-    const searchPanel = initSearchPanel({
+    initSearchPanel({
         maxQueryChars,
     });
 
@@ -29,21 +29,7 @@ document.addEventListener("DOMContentLoaded", (): void => {
         pinnedCardClass: "result-card--pinned",
     });
 
-    const episodeViewer = initEpisodeViewer({
+    initEpisodeViewer({
         episodeLineHighlightClass: "episode-line--highlight",
-    });
-
-    document.addEventListener("keydown", (e: KeyboardEvent): void => {
-        if (e.key !== "Escape") return;
-
-        if (episodeViewer.hasOpenViewer()) {
-            episodeViewer.closeEpisodeViewer();
-            return;
-        }
-
-        const active: HTMLTextAreaElement | null = document.activeElement as HTMLTextAreaElement | null;
-        if (active?.id === "search-input") {
-            searchPanel.clearSearchInput();
-        }
     });
 });

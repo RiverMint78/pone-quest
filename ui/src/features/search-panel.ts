@@ -40,6 +40,11 @@ export function initSearchPanel(options: SearchPanelOptions): SearchPanelControl
     if (searchInput) {
         updateSearchCounter();
         searchInput.addEventListener("input", updateSearchCounter);
+        searchInput.addEventListener("keydown", (e: KeyboardEvent): void => {
+            if (e.key !== "Escape") return;
+            e.preventDefault();
+            clearSearchInput();
+        });
     }
 
     if (clearSearch && searchInput) {

@@ -1,4 +1,5 @@
 import htmx from "htmx.org";
+import { initBackToTopButton } from "./features/back-to-top";
 import { initEpisodeViewer } from "./features/episode-viewer";
 import { initResultsInteractions } from "./features/results-interactions";
 import { initSearchPanel } from "./features/search-panel";
@@ -13,4 +14,5 @@ document.addEventListener("DOMContentLoaded", (): void => {
     initSearchPanel();
     initResultsInteractions();
     initEpisodeViewer();
+    initBackToTopButton();
 });

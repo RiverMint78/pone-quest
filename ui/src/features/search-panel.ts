@@ -51,12 +51,5 @@ export function initSearchPanel(options: SearchPanelOptions = { maxQueryChars: 5
         clearSearch.addEventListener("click", clearSearchInput);
     }
 
-    const searchForm: HTMLFormElement | null = document.getElementById("search-form") as HTMLFormElement | null;
-    if (searchForm) {
-        searchForm.addEventListener("submit", (): void => {
-            window.scrollTo({ top: 0, behavior: "auto" });
-        });
-    }
-
     return { clearSearchInput };
 }

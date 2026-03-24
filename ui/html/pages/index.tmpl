@@ -47,7 +47,7 @@
 {{$resultsTarget := "#results-grid"}}
 {{$loadingIndicator := "#loading"}}
 <div id="search-content" class="space-y-6">
-    <form id="search-form" class="space-y-2" action="{{$searchEndpoint}}" method="get" hx-get="{{$searchEndpoint}}" hx-trigger="submit, keydown[key=='Enter'&&ctrlKey] from:#search-input" hx-include="#search-input" hx-target="{{$resultsTarget}}" hx-indicator="{{$loadingIndicator}}" hx-push-url="true">
+    <form id="search-form" class="space-y-2" action="{{$searchEndpoint}}" method="get" hx-get="{{$searchEndpoint}}" hx-trigger="submit, keydown[key=='Enter'&&ctrlKey] from:#search-input" hx-include="#search-input" hx-target="{{$resultsTarget}}" hx-swap="innerHTML show:window:top" hx-indicator="{{$loadingIndicator}}" hx-push-url="true">
         <div class="flex justify-between items-center">
             <label class="text-sm font-bold text-stone-700">语义检索</label>
             <button id="clear-search" type="button"

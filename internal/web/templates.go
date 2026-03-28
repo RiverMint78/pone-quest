@@ -26,7 +26,8 @@ func NewTemplateCache() (map[string]*template.Template, error) {
 	for _, page := range pages {
 		name := filepath.Base(page)
 		funcMap := template.FuncMap{
-			"assetPath": ui.AssetPath,
+			"assetPath":      ui.AssetPath,
+			"localBeianHTML": LocalBeianHTML,
 		}
 		patterns := []string{
 			"html/base.tmpl",

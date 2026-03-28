@@ -96,6 +96,10 @@
     </div>
     <div class="text-[12px] text-stone-400 text-center leading-tight">Powered by <a href="https://go.dev" target="_blank"
             rel="noopener noreferrer" class="font-semibold hover:underline" style="color: #00ADD8;">Go</a></div>
+    {{$beianHTML := localBeianHTML}}
+    {{if $beianHTML}}
+    <div class="text-[11px] text-stone-400 text-center leading-tight">{{$beianHTML}}</div>
+    {{end}}
 </div>
 {{end}}
 
